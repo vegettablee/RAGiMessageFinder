@@ -156,4 +156,4 @@ def getMessagesBySubject(subject: str, numberOfMessages: int):
     return out
 
 # Example
-getMessagesBySubject("4699106057", 50)
+# getMessagesBySubject("4699106057", 50)

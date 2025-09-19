@@ -24,33 +24,48 @@ def addToTextFile(phone_number : str, messages_per_subject : int):
   print("messages written to data txt : " + str(len(data)))
 
 
-def getTextFile(sentences_per_embedding: int): 
-  file = open(file_name, 'r') 
-  read = file.readlines()
-  all_text = []
-  counter = 0
-  small_batch = []
-  for index in range(len(read)):
-    if counter < sentences_per_embedding: 
-      if read[index][-1] == '\n':
-        small_batch.append(read[index][:-1])
-      else: 
-        small_batch.append(read[index])
-    else: 
-        all_text.append(small_batch) 
-        small_batch = [] # reset the small batch
-        counter = 0
-    counter += 1
+def getTextFile(sentences_per_embedding: int):
+    with open(file_name, 'r') as file:
+        read = file.readlines()
+    
+    all_text = []
+    small_batch = []
+    
+    for line in read:
+        # Clean the line
+        clean_line = line.rstrip('\n')
+        small_batch.append(clean_line)
+        
+        # When batch is full, save it and start new batch
+        if len(small_batch) == sentences_per_embedding:
+            all_text.append(small_batch)
+            small_batch = []
+    
+    # Add any remaining items
+    if small_batch:
+        all_text.append(small_batch)
+    return all_text
 
-  if len(small_batch) > 0: 
-    all_text.append(small_batch) 
+def getTextFileLine(index : int, index_multiplier : int): 
+   with open(file_name, 'r') as file:
+      read = file.readlines() 
+   sentences = []
+   index = index * index_multiplier
+   if index_multiplier > 1:
+      for i in range(1, index_multiplier + 1): # to account for 0 edge case when adding indexes
+        sentences.append(read[index + i])
+   else : 
+      sentences.append(read[index])
 
-  return all_text
+   return sentences # file starts at line 0
       
-addToTextFile("9365539666", 10)
-# getTextFile(2)
+# addToTextFile("9365539666", 10)
+#text = getTextFile(2)
+# for line in text:
+# print(line)
 # raw data is in the form of : 
 # ('2025-07-21 13:33:48', '+19365539666', '', 'Nah it’s okay, I found another pan 🤞', '+19365539666')
+
 
 
 

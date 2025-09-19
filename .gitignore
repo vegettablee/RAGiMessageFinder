@@ -3,4 +3,4 @@
 /data/raw/chat.db-shm
 /data/raw/chat.db-wal
 data/processing/__pycache__
-
+data.txt
