@@ -1,0 +1,6 @@
+.env
+/data/raw/chat.db
+/data/raw/chat.db-shm
+/data/raw/chat.db-wal
+data/processing/__pycache__
+

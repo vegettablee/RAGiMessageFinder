@@ -1,0 +1,57 @@
+erDiagram
+  MESSAGE ||--o{ CHAT_MESSAGE_JOIN : appears_in
+  CHAT ||--o{ CHAT_MESSAGE_JOIN : contains
+  CHAT ||--o{ CHAT_HANDLE_JOIN : has_participant
+  HANDLE ||--o{ CHAT_HANDLE_JOIN : is_participant
+  MESSAGE ||--o{ MESSAGE_ATTACHMENT_JOIN : has
+  ATTACHMENT ||--o{ MESSAGE_ATTACHMENT_JOIN : belongs_to
+
+  MESSAGE {
+    int ROWID PK
+    string guid
+    int date_ns_2001
+    int is_from_me
+    int handle_id FK
+    string text_nullable
+    string associated_message_guid
+    int associated_message_type
+    string thread_originator_guid
+    int date_delivered_ns_2001
+    int date_read_ns_2001
+  }
+
+  HANDLE {
+    int ROWID PK
+    string id
+  }
+
+  CHAT {
+    int ROWID PK
+    string guid
+    string chat_identifier
+    string service_name
+    string display_name
+  }
+
+  CHAT_MESSAGE_JOIN {
+    int chat_id FK
+    int message_id FK
+  }
+
+  CHAT_HANDLE_JOIN {
+    int chat_id FK
+    int handle_id FK
+  }
+
+  ATTACHMENT {
+    int ROWID PK
+    string filename
+    string transfer_name
+    string mime_type
+    int total_bytes
+  }
+
+  MESSAGE_ATTACHMENT_JOIN {
+    int message_id FK
+    int attachment_id FK
+  }
