@@ -16,13 +16,30 @@ MESSAGE_NUM = 10
 def addToTextFile(phone_number : str, messages_per_subject : int): 
   file = open(file_name, 'w')
   data = message_loader.getMessagesBySubject(phone_number, messages_per_subject)
-  for entry in data: 
-    if(entry[1] == 'me'):
-      file.write("[ME] " + str(entry[3] + "\n"))
+  print("number of messages from data : " + str(len(data)))
+  counter = 0
+  blank_idx = 0
+  for entry in range(len(data)): 
+    if(data[entry][1] == 'me'):
+      file.write("[ME] " + (str(data[entry][3]) + "\n"))
     else : 
-      file.write("[THEM] " + str(entry[3] + "\n"))
-  print("messages written to data txt : " + str(len(data)))
+      if entry == len(data) - 1: # last index
+        if entry == messages_per_subject - 1:
+          file.write("[THEM] " + str(data[entry][3]))
+        else : 
+           file.write("[THEM] " + str(data[entry][3]) + "\n")
+        
+      else : 
+        file.write("[THEM] " + str(data[entry][3]) + "\n")
 
+  if messages_per_subject > len(data): # data did not return all messages, fill rest with null to avoid indexing issues
+     for index in range(messages_per_subject - len(data)): 
+        file.write("[NULL]\n")
+        counter += 1
+  
+     
+  print("messages written to data txt : " + str(len(data)))
+  print("[NULL] values added to text file " + str(counter))
 
 def getTextFile(sentences_per_embedding: int):
     with open(file_name, 'r') as file:
@@ -52,7 +69,7 @@ def getTextFileLine(index : int, index_multiplier : int):
    sentences = []
    index = index * index_multiplier
    if index_multiplier > 1:
-      for i in range(1, index_multiplier + 1): # to account for 0 edge case when adding indexes
+      for i in range(0, index_multiplier): # to account for 0 edge case when adding indexes
         sentences.append(read[index + i])
    else : 
       sentences.append(read[index])

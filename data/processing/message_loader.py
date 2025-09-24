@@ -150,7 +150,7 @@ def getMessagesBySubject(subject: str, numberOfMessages: int):
             continue
         sender_label = "me" if is_from_me == 1 else ""
         tup = (sent_at, sender_label, "", body, subject_out)
-        print(tup)
+       # print(tup)
         out.append(tup)
 
     return out
