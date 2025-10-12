@@ -3,6 +3,7 @@
 import message_loader
 import os 
 import sys 
+from data.processing.format import formatMyMessage, formatSenderMessage
 
 processing_path = os.getcwd() 
 print(processing_path)
@@ -13,7 +14,7 @@ sub_dir = "/Users/prestonrank/RAGMessages/data/processing"
 file_name = 'data.txt'
 MESSAGE_NUM = 10
 
-def addToTextFile(phone_number : str, messages_per_subject : int): 
+def addToTextFile(phone_number : str, messages_per_subject : int, subject_name : str): 
   file = open(file_name, 'w')
   data = message_loader.getMessagesBySubject(phone_number, messages_per_subject)
   print("number of messages from data : " + str(len(data)))
@@ -21,21 +22,22 @@ def addToTextFile(phone_number : str, messages_per_subject : int):
   blank_idx = 0
   for entry in range(len(data)): 
     if(data[entry][1] == 'me'):
-      file.write("[ME] " + (str(data[entry][3]) + "\n"))
+      file.write(formatMyMessage(data[entry][3], data[entry][0]))
     else : 
       if entry == len(data) - 1: # last index
         if entry == messages_per_subject - 1:
-          file.write("[THEM] " + str(data[entry][3]))
+           file.write(formatSenderMessage(subject_name, data[entry][3], data[entry][0]))
         else : 
-           file.write("[THEM] " + str(data[entry][3]) + "\n")
-        
+           file.write(formatSenderMessage(subject_name, data[entry][3], data[entry][0]))
       else : 
-        file.write("[THEM] " + str(data[entry][3]) + "\n")
+        file.write(formatSenderMessage(subject_name, data[entry][3], data[entry][0]))
 
   if messages_per_subject > len(data): # data did not return all messages, fill rest with null to avoid indexing issues
      for index in range(messages_per_subject - len(data)): 
         file.write("[NULL]\n")
         counter += 1
+   
+  print(data[0])
   
      
   print("messages written to data txt : " + str(len(data)))
