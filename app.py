@@ -25,8 +25,6 @@ async def initialize_rag_pipeline():
         search_kwargs={"k": 5} # Retrieve top 5 most similar documents
     )
 
-    
-
     # TODO: Implement your RAG initialization logic
     qa_chain = None
     return qa_chain

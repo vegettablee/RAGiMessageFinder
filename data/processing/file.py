@@ -4,6 +4,7 @@ import message_loader
 import os 
 import sys 
 from data.processing.format import formatMyMessage, formatSenderMessage
+from chunking import chunk_messages
 
 processing_path = os.getcwd() 
 print(processing_path)
@@ -17,6 +18,7 @@ MESSAGE_NUM = 10
 def addToTextFile(phone_number : str, messages_per_subject : int, subject_name : str): 
   file = open(file_name, 'w')
   data = message_loader.getMessagesBySubject(phone_number, messages_per_subject)
+  chunks = chunk_messages(data)
   print("number of messages from data : " + str(len(data)))
   counter = 0
   blank_idx = 0
@@ -38,8 +40,6 @@ def addToTextFile(phone_number : str, messages_per_subject : int, subject_name :
         counter += 1
    
   print(data[0])
-  
-     
   print("messages written to data txt : " + str(len(data)))
   print("[NULL] values added to text file " + str(counter))
 
@@ -84,8 +84,3 @@ def getTextFileLine(index : int, index_multiplier : int):
 # print(line)
 # raw data is in the form of : 
 # ('2025-07-21 13:33:48', '+19365539666', '', 'Nah it’s okay, I found another pan 🤞', '+19365539666')
-
-
-
-
-
