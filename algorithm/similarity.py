@@ -36,12 +36,9 @@ def compute_text_similarity(message1, message2, model, similarity_threshold=TEXT
   similarity = F.cosine_similarity(first_emb.unsqueeze(0), second_emb.unsqueeze(0))
 
   if similarity.item() > similarity_threshold:
-    print(f"Messages were similar. Score {similarity.item()}")
+    print(f"Messages were similar. Score {similarity.item()}\n")
     return True, similarity.item()
   else:
-    print(f"Messages were not similar. Score {similarity.item()}")
+    print(f"Messages were not similar. Score {similarity.item()}\n")
     return False, similarity.item()
 
-
-def compute_thread_similarity(burst1, burst2, model): 
-  print("")
