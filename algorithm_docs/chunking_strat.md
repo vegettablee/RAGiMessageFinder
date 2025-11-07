@@ -122,11 +122,4 @@ Max score : 0.1522873044013977 at thread 1, message index 0
 Complement : Also, are we still on for coffee later?
 
 
-Issues : 
-
-For some reason, the chunking algorithm is good at finding the best match, but the algorithm is too greedy. To elaborate, once a message is claimed from the algorithm, there's no way for that message to be reconsidered even if the best match is not yet found. So I'm going to add a separate algorithm that takes two bursts, and tries to find the greatest thread similarity. Since similarity is done sequentially, depending on the order, the message, it can vary wildly what can be the threads that yield the highest similarity score. I can still use the original algorithm for best matches and more approximate micro-threads. 
-
-Next Step : Create an algorithm that can find micro-threads such that the max global sum of all similarity scores is reached, and such that all micro-threads have been computed with their highest possible similarity score for individual threads.
-
-I think I could still use the old algorithm for computing one to one matches with all of burst1 to burst2. Additionally, I could try to apply it with bigger threads and test out approximate micro-threading. Then, use the other algorithm on smaller bursts, then compute the relevant micro-threads. Starting off more general, finding topic shifts, then taking apart individual bursts would be ideal.
 

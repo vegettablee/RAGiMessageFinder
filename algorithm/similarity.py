@@ -27,8 +27,8 @@ def compute_burst_similarity(burst1, burst2, model, burst1_idx, burst2_idx):
 
 def compute_text_similarity(message1, message2, model, similarity_threshold=TEXT_SIMILARITY_THRESHOLD):
   
-  print(f"Message 1 : {message1}")
-  print(f"Message 2 : {message2}")
+  # print(f"Message 1 : {message1}")
+  # print(f"Message 2 : {message2}")
 
   first_emb = model.encode(message1, convert_to_tensor=True)  # 1D shape
   second_emb = model.encode(message2, convert_to_tensor=True)
@@ -36,9 +36,9 @@ def compute_text_similarity(message1, message2, model, similarity_threshold=TEXT
   similarity = F.cosine_similarity(first_emb.unsqueeze(0), second_emb.unsqueeze(0))
 
   if similarity.item() > similarity_threshold:
-    print(f"Messages were similar. Score {similarity.item()}\n")
+    # print(f"Messages were similar. Score {similarity.item()}\n")
     return True, similarity.item()
   else:
-    print(f"Messages were not similar. Score {similarity.item()}\n")
+    # print(f"Messages were not similar. Score {similarity.item()}\n")
     return False, similarity.item()
 
