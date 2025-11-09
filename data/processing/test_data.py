@@ -2,50 +2,30 @@ message_chunks = [
 
 # 1️⃣ Movie weekend plans
 [
-    # Section 1: Weekend plans discussion (3 bursts)
-    # Burst 1: Initial invitation
-    ('2024-10-15 14:30:00', '', '', 'Hey! Want to catch a movie this weekend?', '+15551234567'),
-    ('2024-10-15 14:30:45', '', '', 'Heard the new sci-fi one is really good', '+15551234567'),
-    ('2024-10-15 14:31:20', '', '', 'Reviews are amazing', '+15551234567'),
-
-    # Burst 2: Response (8 min gap)
-    ('2024-10-15 14:39:00', 'me', '', 'Oh yeah! I saw the trailer', '+19365539666'),
-    ('2024-10-15 14:39:30', 'me', '', 'Looks incredible', '+19365539666'),
-
-    # Burst 3: Time coordination (12 min gap)
-    ('2024-10-15 14:51:00', '', '', 'Saturday evening work for you?', '+15551234567'),
-    ('2024-10-15 14:52:00', 'me', '', 'Perfect! 7pm showing?', '+19365539666'),
-    ('2024-10-15 14:52:30', '', '', 'Sounds great', '+15551234567'),
-
-    # Gap > 30 minutes (conversation break)
-    # Section 2: Day-of coordination
-    # Burst 1: Running late
-    ('2024-10-16 18:45:00', 'me', '', 'Running a bit behind', '+19365539666'),
-    ('2024-10-16 18:45:30', 'me', '', 'Parking was a nightmare', '+19365539666'),
-    ('2024-10-16 18:46:00', 'me', '', 'Be there in 5', '+19365539666'),
-
-    # Burst 2: Arrival (10 min gap)
-    ('2024-10-16 18:56:00', 'me', '', "I'm at the ticket counter", '+19365539666'),
-    ('2024-10-16 18:56:30', '', '', 'See you! Grabbing popcorn', '+15551234567'),
-
-    # Gap > 30 minutes (movie ended)
-    # Section 3: Post-movie discussion
-    # Burst 1: Initial reaction
-    ('2024-10-16 21:30:00', '', '', 'WOW that ending!', '+15551234567'),
-    ('2024-10-16 21:30:15', '', '', 'Did NOT see that coming', '+15551234567'),
-    ('2024-10-16 21:30:45', 'me', '', 'Right?? Totally unexpected', '+19365539666'),
-    ('2024-10-16 21:31:00', 'me', '', 'The visuals were insane too', '+19365539666'),
-
-    # Burst 2: Making plans again (15 min gap)
-    ('2024-10-16 21:46:00', '', '', 'We should do this more often', '+15551234567'),
-    ('2024-10-16 21:46:30', 'me', '', 'Definitely! Next weekend?', '+19365539666'),
-    ('2024-10-16 21:47:00', '', '', "I'm in!", '+15551234567'),
-
-    # Gap > 30 minutes (late night)
-    # Section 4: Next day follow-up
-    ('2024-10-17 10:15:00', 'me', '', 'Still thinking about that movie', '+19365539666'),
-    ('2024-10-17 10:15:30', 'me', '', 'Might see it again tbh', '+19365539666'),
-    ('2024-10-17 10:16:15', '', '', 'Haha same! It was that good', '+15551234567'),
+    ('2024-10-21 13:00:00', '', '', "Did you ever fix your bike chain?", '+15551234567'),
+    ('2024-10-21 13:00:45', '', '', "I might get a new one this weekend", '+15551234567'),
+    ('2024-10-21 13:01:20', 'me', '', "Oh yeah? You still going for the road model?", '+19365539666'),
+    ('2024-10-21 13:01:45', '', '', "Maybe, depends on the sale at Ridgeway", '+15551234567'),
+    ('2024-10-21 13:02:10', 'me', '', "Their coffee there is good too", '+19365539666'),
+    ('2024-10-21 13:02:30', '', '', "Haha right, the little shop inside", '+15551234567'),
+    ('2024-10-21 13:03:00', '', '', "Man I could use a coffee now", '+15551234567'),
+],
+[
+    ('2024-10-21 18:15:00', 'me', '', "So that thing we talked about earlier…", '+19365539666'),
+    ('2024-10-21 18:15:30', '', '', "Yeah, I was thinking the same", '+15551234567'),
+    ('2024-10-21 18:16:00', 'me', '', "Still not sure if it’s worth it though", '+19365539666'),
+    ('2024-10-21 18:16:40', '', '', "Depends how it turns out this time", '+15551234567'),
+    ('2024-10-21 18:17:10', 'me', '', "Right, last time was messy", '+19365539666'),
+    ('2024-10-21 18:17:50', '', '', "Let’s just keep it simple then", '+15551234567'),
+], 
+[
+    ('2024-10-22 09:20:00', 'me', '', "Did you send the report yet?", '+19365539666'),
+    ('2024-10-22 09:20:25', '', '', "Not yet, working on it now", '+15551234567'),
+    ('2024-10-22 09:21:00', 'me', '', "Also, did you ever get that book I mentioned?", '+19365539666'),
+    ('2024-10-22 09:21:20', '', '', "Oh right, the one about cities?", '+15551234567'),
+    ('2024-10-22 09:21:45', 'me', '', "Yeah, that one. It’s really good", '+19365539666'),
+    ('2024-10-22 09:22:10', '', '', "Cool, I’ll order it after I finish the report", '+15551234567'),
+    ('2024-10-22 09:22:40', 'me', '', "Haha fair enough", '+19365539666'),
 ],
 
 # 2️⃣ Group project coordination

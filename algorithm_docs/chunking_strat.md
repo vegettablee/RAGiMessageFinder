@@ -1,5 +1,5 @@
 ## Approaches for chunking algorithm 
-Throughout this project, I experimented with different chunking strategies to best keep relevant texts together for better retrieval.
+Throughout this project, I'm experimenting with different chunking strategies to best keep relevant texts together for better retrieval.
 1. Separating by bursts(messages within 5 minutes), and separating by sections(conversation ended, messages more than 45 minutes apart)
 
 Specifically, two time thresholds for sections and bursts : MAX_SECION_TIME, LINE_BURST_TIME
@@ -121,5 +121,137 @@ Remainder : I added the budget section to the spreadsheet last night.
 Max score : 0.1522873044013977 at thread 1, message index 0
 Complement : Also, are we still on for coffee later?
 
+## Pivoting Chunking Algorithm to individual micro thread extraction, keeping topics shifts but training a separate ML model to extract conversation threads from smaller bursts
+
+I decided to pivot and use the IRC conversation disentanglement dataset. It would provide a significantly better and more quantifiable metric, while also making it a lot easier to create a separate ML model for disentangling conversations. 
+
+For the actual ML model, I plan on using a reinforcement learning approach, where the reward is a ratio between the global sum of cosine similarity from all threads individually and individual thread scores. 
+
+So, let's say the conversation is something like : 
+
+Person : Hey, do you want to get coffee later? 
+Person : Also, I need you to finish the report
+Me : I'm good on coffee, I've been awake for so long already. 
+Me : But yeah I finished the report 
+
+Individual thread sum would be calculated as : 
+
+1st thread : cosine similarity between both messages is 0.5
+Person : Hey, do you want to get coffee later? 
+Me : I'm good on coffee, I've been awake for so long already. 
+
+2nd thread : cosine similarity between both messages is 0.6 
+Person : Also, I need you to finish the report
+Me : But yeah I finished the report 
+
+Two separate sums, but using their individual scores as a reward/loss-function compared to how the model computes threads. 
+
+Additionally, global sum of threads : 
+
+1st thread : cosine similarity between both messages is 0.5
+Person : Hey, do you want to get coffee later? 
+Me : I'm good on coffee, I've been awake for so long already. 
+
+2nd thread : cosine similarity between both messages is 0.6 
+Person : Also, I need you to finish the report
+Me : But yeah I finished the report 
+
+Global sum would be 1st thread + 2nd thread score = 0.5 + 0.6 = 1.1 
+
+So everytime the model makes a set of threads, compute their global sum relative to the ground truth from the IRC dataset. 
+
+Parameters to think about : 
+
+Ratio between global sum and individual thread sums, determines the reward and loss function.
+
+Did some research, this will not work because the reward functions may be vague, and the cosine similarity is highly dependent on the root message. Because even if you use global sums, they are very sensitive, and the model will likely not be able to properly learn because the reward functions are just vague in general. 
 
 
+
+Next possible approach : Teacher forcing, then transferring over to reinforcement learning for refinement.
+
+Where messages are modeled as a decision tree. And the model picks an order of nodes, represented by messages.
+Ground truth threads are sorted in order, and the model predicts these in order. 
+
+Say for example, turn these into nodes : 
+Node 1 [14:32] <BurgerMann> hey how do I install nvidia drivers?
+Node 2 [14:33] <delire> BurgerMann: sudo apt-get install nvidia-drivers
+Node 3 [14:33] <Seveas> anyone know if mysql is down?
+Node 4 [14:34] <BurgerMann> delire: which version should I use?
+Node 5 [14:34] <delire> Seveas: works for me
+Node 6 [14:35] <techguy> BurgerMann: try nvidia-driver-470
+Node 7 [14:35] <Seveas> delire: hmm weird, must be my connection
+Node 8 [14:36] <BurgerMann> thanks both!
+
+First two ground truth threads would be : 
+Node 1 [14:32] <BurgerMann> hey how do I install nvidia drivers?
+Node 2 [14:33] <delire> BurgerMann: sudo apt-get install nvidia-drivers
+
+Node 3 [14:33] <Seveas> anyone know if mysql is down?
+Node 5 [14:34] <delire> Seveas: works for me
+
+In cases where one message may have two different connections. Use an associated counter, so whenever the model uses this node that connects to multiple other nodes, decrement the counter. This way, the model can understand that messages can directly relate to other messages. 
+
+Model predicts nodes, then compare with ground truth threads like :
+
+Prediction : [1, 3]
+Ground Truth : [1, 2]
+Compare accuracy ratio : 0.5
+
+When accuracy ratio >= 0.75, do not teacher force and let the model predict the next set of nodes. 
+When accuracy ratio < 0.75, teacher force the ground truth, then move on to predicting the next thread. 
+
+Elaborating on the example, since accuracy ratio is < 0.75, feed the model the ground truth and remove used nodes.
+
+Prediction : [1, 3]
+Ground Truth : [1, 2] 
+
+Feed model ground truth [1, 2] as the first chosen thread 
+Remaining nodes become : [3, 4, 5, 6, 7, 8]
+
+Predict next partial thread and iterate until no nodes remain. 
+
+Potential features for prediction(only use when simple approach yields decent results): 
+- Embedding of message
+- Embeddings of existing threads (average of messages)
+- Cosine similarity between message i and each thread
+- Number of messages in each thread
+- Time gap to most recent message in each thread
+- Speaker patterns
+
+Switch to hybrid learning approach when supervised learning starts yielding higher averages across batches, 75 percent accuracy for now. 
+Specifically, once a given thread is predicted with high enough accuracy, switch to reinforcement learning instead of teacher-forcing/supervised for the rest of the messages/threads.
+
+Now in this hybrid learning approach, using the previous example : 
+
+First two ground truth threads : 
+
+Node 1 [14:32] <BurgerMann> hey how do I install nvidia drivers?
+Node 2 [14:33] <delire> BurgerMann: sudo apt-get install nvidia-drivers
+Model predicts : [1, 2], accuracy = 100%
+
+Switch to reinforcement learning for the remaining threads, so for the rest of the thread, there is no teacher forcing is the model predicts wrong or inaccurately. 
+
+Node 3 [14:33] <Seveas> anyone know if mysql is down?
+Node 5 [14:34] <delire> Seveas: works for me
+Node 7 [14:35] <Seveas> delire: hmm weird, must be my connection
+
+Model predicts : [3, 5, 8], accuracy = 70% 
+Now, no teacher force happens, and the model moves on until all remaining nodes are used, regardless of accuracy. 
+
+Neural network dimensions for first implementation : 
+
+Input feature dim : 768(embeddings) 
+Layer 1 : 256
+Layer 2 : 128 
+Layer 3 : 64
+Output : num_threads + 1 
+
+Explanation : 
+
+Input feature dim is going to be the embedding of the remaining nodes(messages) in the conversation. 
+
+Layers 1 - 3 are for learning implicit patterns about the conversational structure. 
+
+Output : number of current threads and the option of creating a new thread  
+- use a probability distribution over all possible choices, decode the logits from the hidden state of layer 3 

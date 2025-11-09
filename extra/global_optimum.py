@@ -36,14 +36,12 @@ def compute_max(burst1, burst2, model):
   for i in sorted_indices: 
     time_sorted.append(all_messages[i]) 
   
-  messages = time_sorted 
-  
-  pair = find_message_match(messages[0], messages, model)
-  start_idx = 0
-  similar_idx = pair[0]
-  pair_score = pair[1]
+  messages = time_sorted
 
-  order = find_optimal_order(messages, start_idx, similar_idx, model)
+  start_idx = 0
+  end_idx = len(messages)
+
+  order = find_optimal_order(messages, start_idx, end_idx, model)
 
   return max_threads, max_sum
 
@@ -51,29 +49,45 @@ def find_optimal_order(all_messages, start_idx, end_idx, model):
   max_permutations = math.pow(2, end_idx - start_idx) - 1
   optimal_order = []
   highest_score = 0 
-  global_score = 0 
   used = []
   for i in range(start_idx, end_idx):
+    if i == end_idx - 1: # don't compute subsequences for indices that have less than a 2 
+      continue
+    print(f"Computing subsequences for index {start_idx} - {end_idx}")
     sequence = all_messages[start_idx:end_idx]
     threads = subsequences(sequence, model=model)
-    highest_score_idx = torch.argsort([pair[1] for pair in threads])
+
+    scores = torch.tensor([pair[1] for pair in threads])
+    highest_score_idx = torch.argsort(scores)[-1].item()
 
     best_current_thread = threads[highest_score_idx][0]
     best_current_score = threads[highest_score_idx][1]
     used.append({
-      "micro_thread" : best_current_thread, 
+      "micro_thread" : best_current_thread,
       "score" : best_current_score
     })
-    print(f"Best micro-thread for {start_idx} - {end_idx}\n")
-    print(str(best_current_thread))
-    print("Score : " + str(best_current_score))
+
+    print(f"\n{'='*60}")
+    print(f"Range [{start_idx}:{end_idx}] | Score: {best_current_score:.4f} | Thread length: {len(best_current_thread)}")
+    print(f"{'='*60}")
+    for msg in best_current_thread:
+      sender = msg[1] if msg[1] else "Other"
+      print(f"  [{msg[0]}] {sender}: {msg[3]}")
+
     start_idx += 1
-      
+  counter = 0
+  global_score = 0
+
+    
 
 # helper function for find_optimal_order, computes all non-contiguous subsequences with length >= 2
+# all subsequences start with the first element
 def subsequences(seq, start=0, current=None, model=None):
   if current is None:
-    current = []
+    # Initialize with first element, then process rest of sequence
+    if len(seq) < 2:
+      return []
+    return subsequences(seq, start=1, current=[seq[0]], model=model)
 
   if start == len(seq):
     if len(current) >= 2:
@@ -122,8 +136,12 @@ def find_message_match(comp_message, all_messages, model):
 
 counter = 0 
 for idx, message_chunk in enumerate(message_chunks):
-  if counter == 1: 
+  if counter == 3: 
     break 
-  mid_idx = int(len(message_chunk) / 2)
-  bruteforce_microthreads(message_chunk[mid_idx:], message_chunk[:mid_idx], embedder)
+  end_idx = 6 # take the first 6 messages 
+  mid_idx = int(end_idx / 2)
+  spliced = message_chunk[:end_idx]
+  split1 = spliced[:mid_idx]
+  split2 = spliced[mid_idx:]
+  bruteforce_microthreads(split1, split2, embedder)
   counter += 1
