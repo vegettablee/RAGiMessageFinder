@@ -5,11 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class CDModel(nn.Module):
-    """
-    Context Detection Model for conversation chunking.
-
-    Architecture:
+"""
         Input: 768 (embedding dimension)
         Hidden Layer 1: 256
         Hidden Layer 2: 128
@@ -17,7 +13,8 @@ class CDModel(nn.Module):
         Output: TBD
         Activation: ReLU
         Dropout: 0.2 at each layer
-    """
+"""
+class CDModel(nn.Module):
 
     def __init__(self, input_dim=768, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, dropout_rate=0.2):
         super(CDModel, self).__init__()
@@ -31,6 +28,7 @@ class CDModel(nn.Module):
         self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, x):
+        # x shape: [batch_size, num_candidates, input_dim]
         """
         Forward pass through the network.
 
@@ -53,9 +51,16 @@ class CDModel(nn.Module):
         # Layer 3
         x = self.fc3(x)
         x = F.relu(x)
-        x = self.dropout(x)
+        x = self.dropout(x) 
 
         # Output layer will go here
+        logits = self.ffx(x)  # e.g., Linear(hidden_dim3, 1)
+        return logits.squeeze(-1)      # shape [B, N]
 
-        return x
+def example(): 
+    model = CDModel()
+    input_tensor = torch.rand(1, 10, 768) 
+    logits = model(input_tensor) 
+    print(str(logits.shape))
 
+example() 

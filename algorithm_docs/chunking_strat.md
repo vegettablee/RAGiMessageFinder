@@ -255,3 +255,4 @@ Layers 1 - 3 are for learning implicit patterns about the conversational structu
 
 Output : number of current threads and the option of creating a new thread  
 - use a probability distribution over all possible choices, decode the logits from the hidden state of layer 3 
+- specifically, a probability distribution over all remaining nodes, scores that have a score greater than 0.5 get added to the thread classification, this is going to be BCE, where the nodes use a sigmoid activation function 
