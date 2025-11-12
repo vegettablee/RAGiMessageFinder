@@ -12,11 +12,13 @@ def build_message_tree(group):
   # Count references for each node
   for idx, c in enumerate(connections):
     current_node_id = idx + 1  # Convert 0-based index to 1-based node ID
-    c_tuple = (current_node_id, c)
-    correct_threads.append(c_tuple)
 
     # For each node referenced in the connection list
     for referenced_node in c:
+      # Add tuple in (current_node, referenced_node) format
+      c_tuple = (current_node_id, referenced_node)
+      correct_threads.append(c_tuple)
+
       if referenced_node == current_node_id:
         # This is a self-reference
         self_refs.add(referenced_node)

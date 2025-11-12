@@ -23,21 +23,13 @@ class CDModel(nn.Module):
         self.fc1 = nn.Linear(input_dim, hidden_dim1)
         self.fc2 = nn.Linear(hidden_dim1, hidden_dim2)
         self.fc3 = nn.Linear(hidden_dim2, hidden_dim3)
+        self.output_layer = nn.Linear(hidden_dim3, 1)
 
         # Dropout for regularization
         self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, x):
         # x shape: [batch_size, num_candidates, input_dim]
-        """
-        Forward pass through the network.
-
-        Args:
-            x: Input tensor of shape (batch_size, 768)
-
-        Returns:
-            Output tensor of shape (batch_size, 64)
-        """
         # Layer 1
         x = self.fc1(x)
         x = F.relu(x)
@@ -54,9 +46,10 @@ class CDModel(nn.Module):
         x = self.dropout(x) 
 
         # Output layer will go here
-        logits = self.ffx(x)  # e.g., Linear(hidden_dim3, 1)
+        logits = self.output_layer(x)  # e.g., Linear(hidden_dim3, 1)
         return logits.squeeze(-1)      # shape [B, N]
 
+""", works 
 def example(): 
     model = CDModel()
     input_tensor = torch.rand(1, 10, 768) 
@@ -64,3 +57,4 @@ def example():
     print(str(logits.shape))
 
 example() 
+"""
