@@ -1,14 +1,142 @@
-shuffle_mode = False 
+import os
+import glob
+import random
+from collections import defaultdict
 
-# TODO : LOAD IPC DISENTANGLEMENT DATASET
-def load_dataset(dataset_name, num_examples): 
-  print("HI") 
+shuffle_mode = False
 
-def get_dataloader(dataset): 
-  print("HI")
+def load_irc_file(ascii_path, annotation_path):
+  """
+  Load a single IRC conversation file with its annotations.
 
-def get_example(): 
-  return example
+  Args:
+    ascii_path: Path to .ascii.txt file
+    annotation_path: Path to .annotation.txt file
+
+  Returns:
+    dict with keys: 'id', 'raw', 'date', 'connections'
+  """
+  # Read messages
+  with open(ascii_path, 'r', encoding='utf-8', errors='ignore') as f:
+    messages = [line.strip() for line in f.readlines()]
+
+  # Read annotations - build connections dict
+  connections_dict = defaultdict(list)
+  with open(annotation_path, 'r', encoding='utf-8') as f:
+    for line in f:
+      parts = line.strip().split()
+      if len(parts) >= 2:
+        source_id = int(parts[0])
+        target_id = int(parts[1])
+        connections_dict[source_id].append(target_id)
+
+  # Only include messages that have annotations (>= 1000)
+  min_id = min(connections_dict.keys()) if connections_dict else 1000
+  max_id = max(connections_dict.keys()) if connections_dict else len(messages) - 1
+
+  # Extract messages from min_id to max_id
+  original_ids = list(range(min_id, max_id + 1))
+  raw_messages = [messages[i] for i in original_ids if i < len(messages)]
+
+  # Create mapping from original IDs to renumbered IDs (1, 2, 3, ...)
+  id_mapping = {orig_id: idx + 1 for idx, orig_id in enumerate(original_ids[:len(raw_messages)])}
+
+  # Renumber IDs to start from 1
+  renumbered_ids = list(range(1, len(raw_messages) + 1))
+
+  # Build connections list with renumbered IDs
+  connections = []
+  for orig_id in original_ids[:len(raw_messages)]:
+    orig_connections = connections_dict.get(orig_id, [orig_id])
+    # Convert original connection IDs to renumbered IDs
+    renumbered_connections = [id_mapping.get(conn_id, id_mapping[orig_id]) for conn_id in orig_connections if conn_id in id_mapping]
+    if not renumbered_connections:
+      renumbered_connections = [id_mapping[orig_id]]
+    connections.append(renumbered_connections)
+
+  # Extract dates from messages (all same date for one file)
+  date = 'unknown'
+
+  return {
+    'id': renumbered_ids,
+    'raw': raw_messages,
+    'date': [date] * len(raw_messages),
+    'connections': connections
+  }
+
+
+def load_dataset(split='train', num_examples=None, data_dir='/Users/prestonrank/RAGMessages/dataset/irc-disentanglement/data'):
+  """
+  Load IRC disentanglement dataset.
+
+  Args:
+    split: 'train', 'dev', or 'test'
+    num_examples: Number of conversation files to load (None = all)
+    data_dir: Path to dataset directory
+
+  Returns:
+    List of conversation dictionaries
+  """
+  split_dir = os.path.join(data_dir, split)
+
+  # Find all .ascii.txt files
+  ascii_files = sorted(glob.glob(os.path.join(split_dir, '*.ascii.txt')))
+
+  if num_examples:
+    ascii_files = ascii_files[:num_examples]
+
+  dataset = []
+  for ascii_path in ascii_files:
+    # Get corresponding annotation file
+    annotation_path = ascii_path.replace('.ascii.txt', '.annotation.txt')
+
+    if os.path.exists(annotation_path):
+      try:
+        example = load_irc_file(ascii_path, annotation_path)
+        if len(example['raw']) > 0:  # Only add non-empty conversations
+          dataset.append(example)
+      except Exception as e:
+        print(f"Error loading {ascii_path}: {e}")
+        continue
+
+  if shuffle_mode:
+    random.shuffle(dataset)
+
+  print(f"Loaded {len(dataset)} conversations from {split} split")
+  return dataset
+
+
+def get_dataloader(dataset, batch_size=1, shuffle=False):
+  """
+  Simple dataloader that yields batches of conversations.
+
+  Args:
+    dataset: List of conversation dicts
+    batch_size: Batch size
+    shuffle: Whether to shuffle
+
+  Yields:
+    Batches of conversations
+  """
+  if shuffle:
+    random.shuffle(dataset)
+
+  for i in range(0, len(dataset), batch_size):
+    batch = dataset[i:i + batch_size]
+    yield batch
+
+
+# Global dataset cache
+_dataset_cache = None
+
+def get_example():
+  """Get a single random example from the training set."""
+  global _dataset_cache
+
+  if _dataset_cache is None:
+    _dataset_cache = load_dataset(split='train', num_examples=10)
+
+  return random.choice(_dataset_cache)
 
 example = {
     'id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],

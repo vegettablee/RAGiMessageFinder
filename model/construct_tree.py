@@ -100,11 +100,11 @@ def _construct_fully_connected_tree(raw_messages, ids, dates, node_counter):
       nodes[i].add_edge(nodes[j])
 
   # Print connections for all nodes
-  print("\n=== Message Tree Connections ===")
+  # print("\n=== Message Tree Connections ===")
   for node in nodes:
     connected_ids = [edge.id for edge in node.forward_edges]
-    print(f"Node {node.id} (counter: {node.counter}) -> Connected to: {connected_ids}")
-  print("================================\n")
+    # print(f"Node {node.id} (counter: {node.counter}) -> Connected to: {connected_ids}")
+  # print("================================\n")
 
   return nodes
 

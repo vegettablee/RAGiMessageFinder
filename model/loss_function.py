@@ -4,7 +4,6 @@ def compute_loss_f1(predicted, all_node_choices, correct_nodes):
   TP = 0 
   FP = 0
   FN = 0 
-  print(type(correct_nodes[0]))
   correct_set = set(correct_nodes)
   predicted_set = set(predicted)
   for n in predicted: 
