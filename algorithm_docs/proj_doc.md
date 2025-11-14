@@ -257,7 +257,58 @@ Output : number of current threads and the option of creating a new thread
 - use a probability distribution over all possible choices, decode the logits from the hidden state of layer 3 
 - specifically, a probability distribution over all remaining nodes, scores that have a score greater than 0.5 get added to the thread classification, this is going to be BCE, where the nodes use a sigmoid activation function 
 
-
-
 In addition to having the model predict the correct thread, add output field where, after the model actually predicts the correct thread. associate each logit with a true and false field, where this handles if we should keep the given node for the next iteration. I'm doing this mainly to also have the model learn when to keep/discard nodes, and then incorporating this into the loss function. 
 
+## First Prototype Architecture 
+
+For sake of simplicity, output heads will be simplified for just what they mean conceptually.
+
+Main Variables : 
+node = message with position relative in the conversation 
+- ex. node 11 = 11th message in the entire conversation(sorted by time) 
+
+correct_thread = nodes that the model is currently trying to predict 
+- ex. nodes (1,2)
+
+num_candidates = number of remaining nodes that can be guessed
+- ex. model guessed nodes (1,2) already
+- remaining nodes = (3,4,5,6,7)
+- num_candidates = length of remaining nodes = 5
+
+top_k = how many nodes for the model to predict at each run, based on the length of correct thread
+- ex. correct_thread = (1,3), top_k = 2
+
+Architecture
+Input features : [batch_size, num_candidates, emb]
+Layer 1 : 256
+Layer 2 : 128 
+Layer 3 : 64
+Layer 4 : Two output heads with shape [batch_size, num_candidates] 
+
+First output head : models predictions for every node in num_candidates  
+- pred_nodes = topk(nodes, k=top_k)
+- pred_indices = index relative to remaining nodes 
+
+Second output head : models prediction whether to keep every node in num_candidates 
+- have the model predict the first correct node based on the ground truth, then if this is above a certain threshold 
+- remove the other nodes used in the ground truth 
+
+Loss Function : Binary Cross Entropy(BCE) 
+- normalize first output head and second output head for one main score 
+- still thinking about the specifics 
+
+Current evaluation metrics : 
+- f1 score
+
+Future evaluation metrics : 
+- variation of information(look more into)
+- edit distance - how much does the prediction need to be restructured/changed to reach the correct thread? 
+- one-to-one overlap
+
+Improvements/Questions: 
+- find a way to change the input embedding to not be an embedding for the entire conversation, but instead : 
+- - have an an array of embeddings with same length as remaining nodes, where each embedding has context from the other 
+- how to compute score with both output heads? 
+- random masking
+- - either randomly mask words inside of the messages, or mask recipients and/or  
+- start thinking about attention once training goes well 
