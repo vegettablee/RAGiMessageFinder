@@ -17,18 +17,20 @@ def load_irc_file(ascii_path, annotation_path):
     dict with keys: 'id', 'raw', 'date', 'connections'
   """
   # Read messages
-  with open(ascii_path, 'r', encoding='utf-8', errors='ignore') as f:
-    messages = [line.strip() for line in f.readlines()]
+  with open(ascii_path, 'r', encoding='utf-8', errors='replace') as f:
+    messages = [line.strip().replace('<unconvertable>', '[?]') for line in f.readlines()]
 
   # Read annotations - build connections dict
+  # Format: "source target" means "target replies to source"
   connections_dict = defaultdict(list)
   with open(annotation_path, 'r', encoding='utf-8') as f:
     for line in f:
       parts = line.strip().split()
       if len(parts) >= 2:
-        source_id = int(parts[0])
-        target_id = int(parts[1])
-        connections_dict[source_id].append(target_id)
+        source_id = int(parts[0])  # The message being replied to
+        target_id = int(parts[1])  # The message doing the replying
+        # Store: target_id references source_id
+        connections_dict[target_id].append(source_id)
 
   # Only include messages that have annotations (>= 1000)
   min_id = min(connections_dict.keys()) if connections_dict else 1000
@@ -137,6 +139,8 @@ def get_example():
     _dataset_cache = load_dataset(split='train', num_examples=10)
 
   return random.choice(_dataset_cache)
+
+
 
 example = {
     'id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],

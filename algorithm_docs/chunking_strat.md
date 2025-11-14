@@ -256,3 +256,8 @@ Layers 1 - 3 are for learning implicit patterns about the conversational structu
 Output : number of current threads and the option of creating a new thread  
 - use a probability distribution over all possible choices, decode the logits from the hidden state of layer 3 
 - specifically, a probability distribution over all remaining nodes, scores that have a score greater than 0.5 get added to the thread classification, this is going to be BCE, where the nodes use a sigmoid activation function 
+
+
+
+In addition to having the model predict the correct thread, add output field where, after the model actually predicts the correct thread. associate each logit with a true and false field, where this handles if we should keep the given node for the next iteration. I'm doing this mainly to also have the model learn when to keep/discard nodes, and then incorporating this into the loss function. 
+
