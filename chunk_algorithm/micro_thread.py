@@ -1,6 +1,6 @@
 # this file orchestrates the algorithm responsible for computing micro-threads between bursts
 
-from algorithm.similarity import compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
+from chunk_algorithm.similarity import compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
 
 def compute_microthreads(burst1, burst2, model):
   # burst1 and burst2 are lists of tuples: (timestamp, sender, '', text, phone)

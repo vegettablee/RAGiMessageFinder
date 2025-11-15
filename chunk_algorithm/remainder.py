@@ -3,7 +3,7 @@
 from datetime import datetime
 import torch
 import math
-from algorithm.similarity import compute_text_similarity
+from chunk_algorithm.similarity import compute_text_similarity
 
 def append_remainders(valid_threads, remainders, model): # 0.05
 

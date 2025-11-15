@@ -2,9 +2,9 @@
 
 from sentence_transformers import SentenceTransformer, SimilarityFunction
 from data.processing.test_data import message_chunks
-from algorithm.topic_shift import compute_topic_shifts
-from algorithm.micro_thread import compute_microthreads
-from algorithm.remainder import append_remainders
+from chunk_algorithm.topic_shift import compute_topic_shifts
+from chunk_algorithm.micro_thread import compute_microthreads
+from chunk_algorithm.remainder import append_remainders
 
 MAX_SECION_TIME = 30 # max amount of time two texts must stay within
 LINE_BURST_TIME = 5 # max amount of time for line bursts

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from display.display import display_validated_chunks, display_conversation_sections
-from algorithm.similarity import compute_burst_similarity, compute_text_similarity
+from chunk_algorithm.similarity import compute_burst_similarity, compute_text_similarity
 
 MAX_SECION_TIME = 30  # max amount of time two texts must stay within
 LINE_BURST_TIME = 5   # max amount of time for line bursts

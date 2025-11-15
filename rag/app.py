@@ -1,5 +1,5 @@
 import chainlit as cl
-from rag import initialize_embedding_model, load_data, create_faiss_index, create_query_vector
+from rag.rag import initialize_embedding_model, load_data, create_faiss_index, create_query_vector
 
 # Placeholder functions - implement your RAG logic here
 subject_phone = "9365539666"

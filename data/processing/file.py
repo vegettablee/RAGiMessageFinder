@@ -4,7 +4,7 @@ import message_loader
 import os 
 import sys 
 from display.format import formatMyMessage, formatSenderMessage
-from algorithm.chunking import chunk_messages
+from chunk_algorithm.chunking import chunk_messages
 
 processing_path = os.getcwd() 
 print(processing_path)

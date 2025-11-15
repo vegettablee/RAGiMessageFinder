@@ -1,9 +1,9 @@
 from sentence_transformers import SentenceTransformer, SimilarityFunction
 from data.processing.test_data import message_chunks
-from algorithm.topic_shift import compute_topic_shifts
-from algorithm.micro_thread import compute_microthreads
-from algorithm.remainder import append_remainders
-from algorithm.similarity import compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
+from chunk_algorithm.topic_shift import compute_topic_shifts
+from chunk_algorithm.micro_thread import compute_microthreads
+from chunk_algorithm.remainder import append_remainders
+from chunk_algorithm.similarity import compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
 import torch
 import math
 from datetime import datetime

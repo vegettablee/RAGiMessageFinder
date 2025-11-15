@@ -7,7 +7,7 @@ from transformers import AutoTokenizer
 from datetime import datetime
 from data.processing.test_data import message_chunks
 from display.display import display_validated_chunks, display_conversation_sections
-from algorithm.similarity import compute_burst_similarity, compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
+from chunk_algorithm.similarity import compute_burst_similarity, compute_text_similarity, THREAD_TEXT_SIMILARITY_THRESHOLD
 import numpy as np
 import math 
 
