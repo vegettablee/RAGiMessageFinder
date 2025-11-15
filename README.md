@@ -19,7 +19,7 @@ In multi-party conversations (IRC, Slack, Discord), multiple conversation thread
 - Thread 1: Messages 1, 2, 4 (nvidia discussion)
 - Thread 2: Messages 3, 5 (mysql discussion)
 
-## Architecture
+## CURRENTLY PROTOTYPING ARCHITECTURE
 
 ### Neural Network Design
 
