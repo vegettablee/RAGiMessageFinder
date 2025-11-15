@@ -305,10 +305,10 @@ Future evaluation metrics :
 - edit distance - how much does the prediction need to be restructured/changed to reach the correct thread? 
 - one-to-one overlap
 
-Improvements/Questions: 
+Things to Research/Answer: 
 - find a way to change the input embedding to not be an embedding for the entire conversation, but instead : 
 - - have an an array of embeddings with same length as remaining nodes, where each embedding has context from the other 
 - how to compute score with both output heads? 
-- random masking
+- search random masking
 - - either randomly mask words inside of the messages, or mask recipients and/or  
 - start thinking about attention once training goes well 
