@@ -19,7 +19,7 @@ In multi-party conversations (IRC, Slack, Discord), multiple conversation thread
 - Thread 1: Messages 1, 2, 4 (nvidia discussion)
 - Thread 2: Messages 3, 5 (mysql discussion)
 
-## CURRENTLY PROTOTYPING ARCHITECTURE
+## Architecture
 
 ### Neural Network Design
 
@@ -85,7 +85,7 @@ For each conversation:
     optimizer.step()
 ```
 
-### Why Teacher Forcing?
+### Teacher forcing 
 
 **Teacher forcing** guides the model by:
 - Showing it the correct path through the conversation
@@ -200,26 +200,9 @@ KEEP_THRESHOLD = 0.75    # Probability threshold for keep/discard head
 
 **Location**: `dataset/irc-disentanglement/data/`
 
-## Performance Target
-
-### Baseline Comparison
-
-**Rule-based baseline** (Time-Gapped Hierarchical Agglomerative Clustering):
-- F1 Score: **72-76%**
-- Method: Time-based chunking + semantic clustering
-- Fast but limited (misses discourse markers, pronouns, etc.)
-
-**ML Model Target**:
-- F1 Score: **80-85%** (8-10% improvement over baseline)
-- Justification: Learned representations should capture:
-  - Discourse marker patterns ("also", "btw" → topic shift)
-  - Question-answer structure
-  - Pronoun resolution
-  - Global optimization (vs. greedy clustering)
-
 ## Key Implementation Details
 
-### 1. Why Dual Heads?
+### 1. Dual Output Heads
 
 **Thread Head**:
 - Predicts which messages belong to current thread
@@ -231,15 +214,15 @@ KEEP_THRESHOLD = 0.75    # Probability threshold for keep/discard head
 - Prevents re-using messages across multiple threads
 - Learns which messages are "consumed" vs. "reusable"
 
-### 2. Why Iterative Prediction?
+### 2. Iterative Prediction
 
 Predicting threads **one at a time** (instead of all at once):
-- ✅ Simpler learning problem (binary: in thread or not)
-- ✅ Naturally handles variable number of threads
-- ✅ Allows teacher forcing for each thread
-- ✅ Matches inference-time behavior
+- Simpler learning problem (binary: in thread or not)
+- Naturally handles variable number of threads
+- Allows teacher forcing for each thread
+- Matches inference-time behavior
 
-### 3. Why Fully-Connected Graph?
+### 3. Fully-Connected Graph
 
 Initially, each message can connect to **any future message**:
 - Models uncertainty about conversation structure
@@ -247,139 +230,27 @@ Initially, each message can connect to **any future message**:
 - Pruned dynamically as threads are predicted
 - Computationally tractable (max 20 messages per example)
 
-## Architecture Evolution
-
-### Initial Approach (Abandoned)
-❌ **Reinforcement Learning with Cosine Similarity Rewards**
-- Computed global sum of thread similarities as reward
-- Problem: Reward signal too vague and sensitive
-- Model couldn't learn stable policy
-
-### Current Approach (Prototype v1)
-✅ **Supervised Learning with Teacher Forcing**
-- Ground truth threads provide clear supervision
-- Iterative prediction with binary classification
-- Dual heads for thread membership + node management
-- Simple, stable, and effective
-
-### Future Enhancements
-
-**Hybrid Learning** (when F1 > 0.75):
-- Disable teacher forcing
-- Let model predict freely
-- Acts like RL without explicit rewards
-
-**Advanced Features**:
-- Attention mechanisms for message relationships
-- Speaker embeddings for multi-party dynamics
-- Temporal encoding (time gaps between messages)
-- Discourse marker features ("also", "btw", "speaking of")
-
-**Alternative Architectures**:
-- Graph Neural Networks (GNNs) for message relationships
-- Transformer encoder for sequence modeling
-- Recurrent layers (LSTM/GRU) for conversation flow
-
 ## Project Structure
 
 ```
 model/
-├── CD_model.py           # Neural network architecture
-├── training_loop.py      # Training orchestration
-├── loss_function.py      # F1 score and BCE loss
-├── dataset_utils.py      # IRC dataset loading
-├── construct_tree.py     # Message graph construction
-├── debug_display.py      # Visualization utilities
+├── CD_model.py
+├── training_loop.py
+├── loss_function.py
+├── dataset_utils.py
+├── construct_tree.py
+├── debug_display.py
 └── results/
-    └── results.json      # Training metrics
-
-algorithm_docs/
-├── proj_doc.md          # Project journey and evolution
-├── algorithm_doc.md     # Algorithm experiments
-└── baseline.md          # Baseline implementation details
 
 dataset/
-└── irc-disentanglement/  # IRC chat dataset with annotations
+└── irc-disentanglement/
 ```
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `model/CD_model.py` | Dual-head neural network definition |
-| `model/training_loop.py` | Training loop with teacher forcing |
-| `model/construct_tree.py` | Message graph + thread extraction |
-| `model/dataset_utils.py` | IRC dataset loader |
-| `model/loss_function.py` | F1 score computation |
-
-## Current Status
-
-**Phase**: Prototype Architecture v1
-
-**Completed**:
-- ✅ Dual-head model architecture
-- ✅ Teacher forcing training loop
-- ✅ Message tree construction
-- ✅ IRC dataset integration
-- ✅ F1 score and accuracy tracking
-- ✅ Debug visualization
-
-**In Progress**:
-- 🔄 Training on full dataset (1000 examples, 1 epoch)
-- 🔄 Hyperparameter tuning
-- 🔄 Baseline comparison
-
-**Next Steps**:
-1. Complete multi-epoch training (10-20 epochs)
-2. Evaluate against baseline on test set
-3. Switch to hybrid learning (disable teacher forcing)
-4. Add advanced input features (speaker, time, discourse markers)
-5. Experiment with attention mechanisms
 
 ## Dependencies
 
-Core libraries:
 ```
-torch                  # Neural network framework
-sentence-transformers  # Message embeddings
-numpy                  # Numerical operations
-scikit-learn          # Baseline clustering + metrics
+torch
+sentence-transformers
+numpy
+scikit-learn
 ```
-
-Full dependencies in `requirements.txt`.
-
-## Research Questions
-
-**Model Design**:
-- When should we switch from teacher forcing to free prediction?
-- Does attention significantly improve thread prediction?
-- Should we use graph neural networks instead of feedforward?
-
-**Training Strategy**:
-- What's the optimal balance between thread head and keep head losses?
-- Does random masking improve generalization?
-- How to handle very long conversations (>100 messages)?
-
-**Evaluation**:
-- Is F1 score the best metric, or should we use edit distance / variation of information?
-- How to evaluate partial thread correctness?
-
-## Citation
-
-**Dataset**: IRC Disentanglement Dataset
-```
-@inproceedings{kummerfeld2019large,
-  title={A Large-Scale Corpus for Conversation Disentanglement},
-  author={Kummerfeld, Jonathan K and Gouravajhala, Sai R and Peper, Joseph J and Athreya, Vignesh and Gunasekara, Chulaka and Ganhotra, Jatin and Patel, Siva Sankalp and Polymenakos, Lazaros C and Lasecki, Walter},
-  booktitle={ACL},
-  year={2019}
-}
-```
-
-## License
-
-See `LICENSE` for details.
-
----
-
-**Goal**: Build a conversation disentanglement model that significantly outperforms rule-based baselines (80-85% F1) through learned representations of conversational structure.
