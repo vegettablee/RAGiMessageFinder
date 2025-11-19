@@ -48,11 +48,6 @@ def build_message_tree(group):
     forward_graph[start_node] = future_nodes
 
   # DEBUG: Print forward graph to verify connections
-  print("\n=== FORWARD GRAPH DEBUG ===")
-  for node_id in sorted(forward_graph.keys()):
-    futures = forward_graph[node_id]
-    print(f"Node {node_id} → Future nodes: {sorted(futures)}")
-  print("===========================\n")
 
   # Find root nodes (nodes that are never referenced by other nodes)
   root_nodes = []
@@ -66,88 +61,41 @@ def build_message_tree(group):
     if node_id not in all_referenced_nodes:
       root_nodes.append(node_id)
 
-  # DEBUG: Print root nodes
-  print("=== ROOT NODES DEBUG ===")
-  print(f"Root nodes (not referenced by others): {sorted(root_nodes)}")
-  print(f"All referenced nodes: {sorted(all_referenced_nodes)}")
-  print("========================\n")
+  # Build threads by traversing from each self-referenced node through the forward graph
+  def build_thread_from_node(start_node, graph):
+    """Build a thread by collecting all nodes reachable from start_node"""
+    visited = set()
+    queue = [start_node]
+    thread = []
 
-  # Build non-overlapping linear conversation threads
-  # When a node has multiple future nodes (branching), we:
-  # 1. End the current thread at that node
-  # 2. Start new threads from each branch
+    while queue:
+      current = queue.pop(0)
+      if current in visited:
+        continue
 
-  visited_nodes = set()
+      visited.add(current)
+      thread.append(current)
 
-  def build_linear_thread(start_node, graph, self_refs_set):
-    """Build a single linear thread starting from start_node, stopping at branches"""
-    if start_node in visited_nodes:
-      return [], []
+      # Add all future nodes to the queue
+      if current in graph:
+        for future_node in graph[current]:
+          if future_node not in visited:
+            queue.append(future_node)
 
-    thread = [start_node]
-    visited_nodes.add(start_node)
-    current = start_node
-    new_branch_starts = []
+    return tuple(thread)
 
-    while True:
-      future_nodes = graph.get(current, [])
-      # Filter out already visited nodes
-      unvisited_futures = [n for n in future_nodes if n not in visited_nodes]
-
-      if len(unvisited_futures) == 0:
-        # No more future nodes - end thread
-        break
-      elif len(unvisited_futures) == 1:
-        # Single path - continue thread
-        next_node = unvisited_futures[0]
-        thread.append(next_node)
-        visited_nodes.add(next_node)
-        current = next_node
-      else:
-        # Branching point - continue with first branch, queue the rest
-        next_node = unvisited_futures[0]
-        thread.append(next_node)
-        visited_nodes.add(next_node)
-        current = next_node
-
-        # Queue remaining branches as new thread starts
-        for branch in unvisited_futures[1:]:
-          new_branch_starts.append(branch)
-
-    # Format thread
-    # Only use (node, node) format if truly isolated (no future nodes in graph)
-    if len(thread) == 1 and start_node in self_refs_set and start_node not in graph:
-      return [(start_node, start_node)], new_branch_starts
-    else:
-      return [tuple(thread)], new_branch_starts
-
-  # Process all root nodes and branches
-  queue = list(root_nodes)
-
-  while queue:
-    start = queue.pop(0)
-    threads, new_branches = build_linear_thread(start, forward_graph, self_refs)
-    correct_threads.extend(threads)
-    queue.extend(new_branches)
+  # Process each self-referenced node (thread starter)
+  for self_ref_node in sorted(self_refs):
+    thread = build_thread_from_node(self_ref_node, forward_graph)
+    correct_threads.append(thread)
 
   # Sort threads by starting node (first element of tuple)
   correct_threads.sort(key=lambda x: x[0])
 
-  # Build node_counter based on the rules:
-  # - If external refs > 0: counter = external refs
-  # - If external refs == 0 and self-ref exists: counter = 1
-  # - Otherwise: counter = 0
+  # Build node_counter: default all nodes to counter = 1
   node_counter = {}
   for node_id in ids:
-    ext_count = external_refs.get(node_id, 0)
-    has_self_ref = node_id in self_refs
-
-    if ext_count > 0:
-      node_counter[node_id] = ext_count
-    elif has_self_ref:
-      node_counter[node_id] = 1
-    else:
-      node_counter[node_id] = 0
+    node_counter[node_id] = 1
 
   # construct a tree that can be used later to add extra input features(features will be associated with the node, ignore for now)
   # for now, the tree will just be used to model the message as a tree
@@ -157,12 +105,14 @@ def build_message_tree(group):
   # msg2 is connected to msg3, msg4
   # msg4 is a leaf node
 
-  # for each node in the graph, look at the connections, and in cases where a message has multiple links
-  # based on how many links, this node will have a counter associated with it, where, when returned with a partial thread
-  # decrement this counter, if it reaches zero, remove the node from the tree, otherwise, just decrement it
-
   # Build the message tree
   message_tree = _construct_fully_connected_tree(raw_messages, ids, dates, node_counter)
+
+  # Compute list of self-referenced nodes (thread starters)
+  self_referenced_nodes = []
+  for node in message_tree:
+    if node.id in self_refs:
+      self_referenced_nodes.append(node)
 
   return message_tree, correct_threads
 
@@ -205,9 +155,9 @@ def _construct_fully_connected_tree(raw_messages, ids, dates, node_counter):
 
   # Print connections for all nodes
   # print("\n=== Message Tree Connections ===")
-  for node in nodes:
-    connected_ids = [edge.id for edge in node.forward_edges]
-    # print(f"Node {node.id} (counter: {node.counter}) -> Connected to: {connected_ids}")
+  # for node in nodes:
+  #   forward_ids = [edge.id for edge in node.forward_edges]
+  #   print(f"Node {node.id} (counter: {node.counter}) -> Forward edges: {forward_ids}")
   # print("================================\n")
 
   return nodes

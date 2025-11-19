@@ -9,11 +9,11 @@ from CD_model import CDModel
 from loss_function import compute_loss_f1, compute_loss_BCE
 import debug_display as dbg
 
-EPOCHS = 1
+EPOCHS = 5 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
-MAX_MESSAGES_PER_EXAMPLE = 20  # Limit conversation length for faster training
+MAX_MESSAGES_PER_EXAMPLE = 15  # Limit conversation length for faster training
 NUM_EXAMPLES = 1000
 TEACHER_FORCE = True # when false, let the model choose freely
 
@@ -96,27 +96,18 @@ def training_loop():
           if dbg.should_show_debug_for_example(batch_idx) and thread_idx == 0:
             dbg.display_embedding_info(messages, messages_emb, input_tensor)
 
-          thread_logits, keep_logits = cd_model(input_tensor) # shape [B, N]
+          thread_logits = cd_model(input_tensor) # shape [B, N]
           node_logits = thread_logits[0]
           thread_probs = torch.sigmoid(node_logits)
           top_k = len(correct_thread) # based on the length of the correct thread, return top k
           top_values, top_indices = torch.topk(thread_probs, k=top_k) 
           # change this later to only return the top scoring logits, i'm forcing top 4 initially for training, but once accuracy gets better
-          # switch this 
-
-          keep_probs = torch.sigmoid(keep_logits[0])
-
-          selected_probs = keep_probs[top_indices]
-          selected_ids = torch.tensor([ids[idx.item()] for idx in top_indices])
-          mask = selected_probs > 0.75
-
-          kept_probs = selected_probs[mask]
-          kept_ids   = selected_ids[mask]
-
+          # switch this
           # only select the kept_logits for what the model predicted, ignore all of the other values
 
           predicted = []
           pred_ids = []
+
           for idx in range(len(top_indices)):
             index = top_indices[idx].item()  # convert tensor to int
             predicted.append(messages[index])
@@ -136,8 +127,7 @@ def training_loop():
 
           # Debug: Show thread prediction details
           if dbg.should_show_debug_for_example(batch_idx):
-            dbg.display_thread_prediction(thread_idx, correct_thread, pred_ids, kept_probs,
-                                          kept_ids, remaining_nodes, original_messages)
+            dbg.display_thread_prediction(thread_idx, correct_thread, pred_ids, remaining_nodes, original_messages)
           # use a sigmoid activation to map the nodes to scores, and then match their indexes to properly do the loss function
           # form_prediction(logits, )  # TODO: incomplete
           # Use pred_ids (node IDs) instead of predicted (message strings) for F1 calculation
@@ -166,7 +156,7 @@ def training_loop():
           loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
           total_loss += loss
 
-          # Calculate accuracy: intersection of predicted and ground truth
+          # calculate accuracy: intersection of predicted and ground truth
           pred_set = set(pred_ids)
           correct_set = set(correct_thread)
           if len(pred_set) > 0:
@@ -174,11 +164,11 @@ def training_loop():
           else:
             accuracy = 0.0
 
-          # Track metrics
+          # track metrics
           example_f1_scores.append(f1_score)
           example_accuracies.append(accuracy)
 
-        # Backpropagate after all threads in this example
+        # backpropagate after all threads in this example
         if total_loss > 0:
           total_loss.backward()
           optimizer.step()

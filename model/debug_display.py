@@ -4,14 +4,14 @@
 # DISPLAY FLAGS - Set to True/False to control what gets printed
 # ============================================================================
 SHOW_FULL_CONVERSATION = False      # Print all messages in the example
-SHOW_RAW_CONNECTIONS = True        # Print raw connections from dataset
-SHOW_GROUND_TRUTH_THREADS = True   # Print ground truth threads
-SHOW_NODE_COUNTERS = True          # Print node counter summary
-SHOW_EMBEDDING_INFO = True         # Print conversation embedding shapes
+SHOW_RAW_CONNECTIONS = False        # Print raw connections from dataset
+SHOW_GROUND_TRUTH_THREADS = False   # Print ground truth threads
+SHOW_NODE_COUNTERS = False          # Print node counter summary
+SHOW_EMBEDDING_INFO = False         # Print conversation embedding shapes
 SHOW_THREAD_PREDICTIONS = True     # Print model predictions per thread
 
 # Control how many examples/threads to show
-DEBUG_FIRST_N_EXAMPLES = 1         # Only show debug for first N examples
+DEBUG_FIRST_N_EXAMPLES = 3         # Only show debug for first N examples
 DEBUG_FIRST_N_THREADS = 3          # Only show thread predictions for first N threads
 MAX_THREADS_TO_DISPLAY = 15        # Max threads to show in ground truth
 
@@ -100,7 +100,7 @@ def display_embedding_info(messages, messages_emb, input_tensor):
     print(f"{'='*80}\n")
 
 
-def display_thread_prediction(thread_idx, correct_thread, pred_ids, kept_probs, kept_ids,
+def display_thread_prediction(thread_idx, correct_thread, pred_ids,
                                remaining_nodes, original_messages):
     """Display model predictions and decisions for a thread"""
     if not SHOW_THREAD_PREDICTIONS:
@@ -120,18 +120,6 @@ def display_thread_prediction(thread_idx, correct_thread, pred_ids, kept_probs, 
         msg = original_messages[pred_id - 1]
         truncated_msg = msg[:80] + '...' if len(msg) > 80 else msg
         print(f"    - Node {pred_id}: {truncated_msg}")
-
-    print(f"\nKeep/Discard Decisions (threshold > 0.75):")
-    print(f"  Kept Probabilities: {kept_probs.tolist() if len(kept_probs) > 0 else 'None'}")
-    print(f"  Kept IDs: {kept_ids.tolist() if len(kept_ids) > 0 else 'None'}")
-
-    if len(kept_ids) > 0:
-        for kid in kept_ids:
-            msg = original_messages[kid - 1]
-            truncated_msg = msg[:80] + '...' if len(msg) > 80 else msg
-            print(f"    - Node {kid}: {truncated_msg}")
-    else:
-        print(f"    (All nodes discarded - none above threshold)")
 
     print(f"\nRemaining State After This Thread:")
     print(f"  Remaining IDs: {remaining_nodes}")
