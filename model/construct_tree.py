@@ -180,7 +180,15 @@ class message_node():
   def decrement_counter(self):
     """Decrement the counter when a partial thread is returned"""
     self.counter -= 1
-    return self.counter 
+    return self.counter
+
+  def __repr__(self):
+    """String representation for lists and debugging"""
+    return f"message_node(id={self.id}, counter={self.counter})"
+
+  def __str__(self):
+    """Human-readable string representation"""
+    return f"Node {self.id} (counter: {self.counter})" 
 
 def remove_used_nodes(message_tree, used_node_ids):
   """

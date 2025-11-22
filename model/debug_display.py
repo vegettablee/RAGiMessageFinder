@@ -5,7 +5,7 @@
 # ============================================================================
 SHOW_FULL_CONVERSATION = False      # Print all messages in the example
 SHOW_RAW_CONNECTIONS = False        # Print raw connections from dataset
-SHOW_GROUND_TRUTH_THREADS = False   # Print ground truth threads
+SHOW_GROUND_TRUTH_THREADS = True   # Print ground truth threads
 SHOW_NODE_COUNTERS = False          # Print node counter summary
 SHOW_EMBEDDING_INFO = False         # Print conversation embedding shapes
 SHOW_THREAD_PREDICTIONS = True     # Print model predictions per thread

@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-11-19T00:36:48.872379",
+  "timestamp": "2025-11-21T21:58:34.748432",
   "epoch": 5,
   "metrics": {
-    "avg_loss": 4.689133333224876,
-    "avg_f1_score": 0.14004049204325447,
-    "avg_accuracy": 0.14004049204325447
+    "avg_loss": 4.845574273003472,
+    "avg_f1_score": 0.3736614061199696,
+    "avg_accuracy": 0.37373814031272595
   },
   "model_config": {
     "architecture": "CDModel (Multi-head)",
@@ -18,11 +18,11 @@
     },
     "dropout_rate": 0.2,
     "activation": "ReLU",
-    "total_parameters": 238081,
-    "trainable_parameters": 238081
+    "total_parameters": 2600449,
+    "trainable_parameters": 2600449
   },
   "training_config": {
-    "learning_rate": 0.001,
+    "learning_rate": 0.01,
     "optimizer": "Adam",
     "loss_function": "BCEWithLogitsLoss",
     "max_messages_per_example": 15,

@@ -25,7 +25,7 @@ def training_loop():
   # Initialize models
   if USE_CHECKPOINT is False: 
     cd_model = CDModel()
-    optimizer = optim.Adam(model.parameters(), lr=0.001) # adam optimizer 
+    optimizer = optim.Adam(model.parameters(), lr=0.01) # adam optimizer 
   
   dataset = load_dataset(split='train', num_examples=NUM_EXAMPLES)
 
@@ -43,7 +43,6 @@ def training_loop():
     for batch_idx, batch in enumerate(dataloader):
       for ex_idx, example in enumerate(batch):
       # get training example(might add pre-processing)
-        example = batch[0]  # Extract example from batch
 
         # Truncate to first N messages for faster training
         if len(example["raw"]) > MAX_MESSAGES_PER_EXAMPLE:
@@ -70,7 +69,7 @@ def training_loop():
         used_nodes = []
         msg_rmv = [] # messages to remove at each iteration
         remaining_nodes = ids.copy()
-        messages = original_messages # use a copy
+        messages = original_messages.copy() # use a copy
 
         # Accumulate loss and metrics across all threads in this example
         total_loss = 0
@@ -83,11 +82,10 @@ def training_loop():
             break
           # emb the entire conversation into one embedding as an input feature for the model
           # correct_thread is a tuple like (1, 1) or (2, 1), convert to 0-indexed
-          correct_message_thread = [original_messages[i - 1] for i in correct_thread if i <= len(original_messages)]
-          messages = example["raw"]
           messages_emb = model.encode(messages)
 
           num_possible_outputs = len(messages)
+        #  print("total of number possible messages for model to pick " + str(num_possible_outputs))
 
           # batch_size to 1 for initial testing
           input_tensor = torch.tensor(messages_emb).unsqueeze(0)
@@ -95,63 +93,43 @@ def training_loop():
           # Debug: Show embedding info for first thread
           if dbg.should_show_debug_for_example(batch_idx) and thread_idx == 0:
             dbg.display_embedding_info(messages, messages_emb, input_tensor)
-
+        #  print("input tensor shape : " + str(input_tensor.shape))
           thread_logits = cd_model(input_tensor) # shape [B, N]
-          node_logits = thread_logits[0]
-          thread_probs = torch.sigmoid(node_logits)
-          top_k = len(correct_thread) # based on the length of the correct thread, return top k
-          top_values, top_indices = torch.topk(thread_probs, k=top_k) 
-          # change this later to only return the top scoring logits, i'm forcing top 4 initially for training, but once accuracy gets better
-          # switch this
-          # only select the kept_logits for what the model predicted, ignore all of the other values
+      #    print("thread_logits shape : " + str(thread_logits.shape))
 
+          node_logits = thread_logits[0]
+          # print(str(node_logits))
+          thread_probs = torch.sigmoid(node_logits)
+          top_k = min(len(correct_thread), len(thread_probs)) # ensure k doesn't exceed available elements
+          top_values, top_indices = torch.topk(thread_probs, k=top_k) 
+         
           predicted = []
           pred_ids = []
-
           for idx in range(len(top_indices)):
             index = top_indices[idx].item()  # convert tensor to int
             predicted.append(messages[index])
             pred_ids.append(ids[index]) # ids that were predicted
 
-          # Teacher forcing: remove ground truth nodes vs. model predictions
-          if TEACHER_FORCE:
-            # Remove nodes from ground truth (correct_thread) to guide training
-            for node_id in correct_thread:
-              if node_id in remaining_nodes:
-                remaining_nodes.remove(node_id)
-          else:
-            # Remove nodes that model predicted (let model choose freely)
-            for node_id in pred_ids:
-              if node_id in remaining_nodes:
-                remaining_nodes.remove(node_id)
 
-          # Debug: Show thread prediction details
-          if dbg.should_show_debug_for_example(batch_idx):
-            dbg.display_thread_prediction(thread_idx, correct_thread, pred_ids, remaining_nodes, original_messages)
-          # use a sigmoid activation to map the nodes to scores, and then match their indexes to properly do the loss function
-          # form_prediction(logits, )  # TODO: incomplete
-          # Use pred_ids (node IDs) instead of predicted (message strings) for F1 calculation
           f1_score = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
-          used_nodes.append(correct_thread)
-
-          message_tree, removed_nodes = remove_used_nodes(message_tree, used_nodes)
-          msg_rmv = used_nodes
-
-          for idx, n in enumerate(removed_nodes):
-            rm_idx = ids.index(n) # find index based on node number
-            del messages[rm_idx] # remove from messages
-            msg_rmv = [] # reset
+          used_nodes = list(correct_thread)
+         # print("These are the used nodes" +  str(used_nodes))
 
           correct_nodes = set(correct_thread)
-          pred_ids = set(pred_ids) # turn into set
+          set_pred_ids = set(pred_ids) # turn into set
           true_labels = []
-          for idx in range(len(node_logits)): # create truth labels for BCE loss function
+          #print("Node logits shape : " + str(len(node_logits)))
+          #print("Ids model used for prediciton : " + str(pred_ids))
+          #print("Remaining ids to evaluate truth labels with length " + str(len(remaining_nodes)) + " : " + str(remaining_nodes) + "\n\n")
+          for i, node_id in enumerate(remaining_nodes): # create truth labels for BCE loss function
           # Map logit position to node ID
-            current_id = ids[idx]
-            if current_id in correct_nodes:
+            if node_id in correct_nodes:
               true_labels.append(1)
             else:
               true_labels.append(0)
+              
+          #print("These are truth labels with length " + str(len(node_logits)) + ": " + str(true_labels))
+         # print("These are logits with length : " + str(len(node_logits)))
 
           loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
           total_loss += loss
@@ -167,6 +145,33 @@ def training_loop():
           # track metrics
           example_f1_scores.append(f1_score)
           example_accuracies.append(accuracy)
+          
+          # remove used nodes from ids 
+          # remove used messages from messages for next iteration 
+          message_tree, removed = remove_used_nodes(message_tree, used_nodes) # removed has shape [message_node(id=1, counter=0)]
+          removed_nodes = [item.id for item in removed] # removed_nodes has shape [1,2,3]
+          msg_rmv = used_nodes
+
+        #  print("These are the removed nodes: " + str(removed_nodes))
+          
+          # Filter out removed nodes from both messages and ids for next iteration
+          removed_set = set(removed_nodes)
+          messages = [msg for i, msg in enumerate(messages) if ids[i] not in removed_set]
+          ids = [node_id for node_id in ids if node_id not in removed_set]
+          # Teacher forcing: remove ground truth nodes vs. model predictions
+          if TEACHER_FORCE is True:
+            # Remove nodes from ground truth (correct_thread) to guide training
+            for node_id in correct_thread:
+              if node_id in remaining_nodes:
+                remaining_nodes.remove(node_id)
+          else:
+            # remove nodes that model predicted (let model choose freely)
+            for node_id in pred_ids:
+              if node_id in remaining_nodes:
+                remaining_nodes.remove(node_id)
+          
+          if dbg.should_show_debug_for_example(batch_idx):
+            dbg.display_thread_prediction(thread_idx, correct_thread, pred_ids, remaining_nodes, original_messages)
 
         # backpropagate after all threads in this example
         if total_loss > 0:
@@ -175,7 +180,8 @@ def training_loop():
 
           # example-level metrics
           avg_f1 = sum(example_f1_scores) / len(example_f1_scores) if example_f1_scores else 0.0
-          avg_accuracy = sum(example_accuracies) / len(example_accuracies) if example_accuracies else 0.0
+          avg_accuracy = sum(example_accuracies) / len(example_accuracies) if example_accuracies else 0.0 
+          average_loss = total_loss.item() / len(correct_threads)
 
           # epoch metrics
           epoch_f1_scores.extend(example_f1_scores)
@@ -183,7 +189,7 @@ def training_loop():
           epoch_losses.append(total_loss.item())
 
           # Print example summary
-          print(f"Example {batch_idx + 1}/{len(dataset)} | Loss: {total_loss.item():.4f} | Avg F1: {avg_f1:.4f} | Avg Accuracy: {avg_accuracy:.4f}")
+          print(f"Example average {batch_idx + 1}/{len(dataset)} | Loss: {average_loss} | Avg F1: {avg_f1:.4f} | Avg Accuracy: {avg_accuracy:.4f}")
 
     # Print epoch summary
     epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0.0
