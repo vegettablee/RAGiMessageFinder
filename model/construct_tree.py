@@ -82,6 +82,8 @@ def build_message_tree(group):
           if future_node not in visited:
             queue.append(future_node)
 
+    # Sort thread nodes chronologically before returning
+    thread.sort()
     return tuple(thread)
 
   # Process each self-referenced node (thread starter)

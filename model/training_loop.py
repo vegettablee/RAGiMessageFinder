@@ -1,31 +1,37 @@
 import torch
 import torch.nn as nn
 from sentence_transformers import SentenceTransformer
+from sentence_transformers.cross_encoder.losses import ListNetLoss
 import torch.optim as optim
 
 from dataset_utils import load_dataset, get_dataloader, get_example
 from construct_tree import build_message_tree, remove_used_nodes
 from CD_model import CDModel
-from loss_function import compute_loss_f1, compute_loss_BCE
+from loss_function import compute_loss_f1, ListNetLoss
 import debug_display as dbg
+import random
 
-EPOCHS = 5 # each epoch is roughly 153 examples
+EPOCHS = 10 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
 MAX_MESSAGES_PER_EXAMPLE = 15  # Limit conversation length for faster training
-NUM_EXAMPLES = 1000
+NUM_EXAMPLES = 3000
 TEACHER_FORCE = True # when false, let the model choose freely
+PRUNE_SELF_NODES_PROB = 0.80 # only keep 20 percent of nodes who do not have any connections 
+PRUNE_LONG_NODES_PROB = 0.50 # only keep 75 percent of nodes that exceed length of 9 
+PRUNE_LONG_NODE_LEN = 9 # minimum node length to prune 
 
 model = SentenceTransformer("all-mpnet-base-v2")
-loss_fn = nn.BCEWithLogitsLoss() # binary cross entropy 
+# loss_fn = nn.BCEWithLogitsLoss() # binary cross entropy 
+loss_fn = ListNetLoss() # 
 
 # all nodes are a direct reference to a real message
 def training_loop():
   # Initialize models
   if USE_CHECKPOINT is False: 
     cd_model = CDModel()
-    optimizer = optim.Adam(model.parameters(), lr=0.01) # adam optimizer 
+    optimizer = optim.Adam(cd_model.parameters(), lr=0.001) # adam optimizer
   
   dataset = load_dataset(split='train', num_examples=NUM_EXAMPLES)
 
@@ -58,18 +64,40 @@ def training_loop():
         dates = example["date"] # contains the full date of each message
         connections = example["connections"] # original data used for ground truth, may not be needed
         message_tree, correct_threads = build_message_tree(example) # construct message tree with example
+        messages = original_messages.copy() # use a copy, don't ever mutate
 
+        #print("Messages before removing : " + str(messages))
+        #print("Threads before removing : " + str(correct_threads) + "\n\n")
+        for thread_idx, thread in enumerate(correct_threads):
+          if len(thread) == 1: 
+            rand = random.uniform(0.0, 1.0)
+            if(rand > PRUNE_SELF_NODES_PROB): 
+              message_tree, removed = remove_used_nodes(message_tree, thread)
+              root_id = removed[0].id
+              # print("root id : " + str(root_id))
+              ids.remove(root_id)
+              correct_threads.remove(thread)
+          if len(thread) > PRUNE_LONG_NODE_LEN: # sometimes prune nodes with exceedingly greater length 
+            rand = random.uniform(0.0, 1.0)
+            if(rand > PRUNE_LONG_NODES_PROB): 
+              message_tree, removed = remove_used_nodes(message_tree, thread)
+              for node in removed: 
+                ids.remove(node.id)
+              correct_threads.remove(thread)
+              # remove redundant threads 
+        #print("Messages after removing : " + str(messages))
+        #print("Threads after removing : " + str(correct_threads))
+        
         # Debug display for first N examples
         if dbg.should_show_debug_for_example(batch_idx):
           dbg.display_full_conversation(batch_idx + 1, original_messages, ids)
           dbg.display_raw_connections(connections, ids)
           dbg.display_ground_truth_threads(correct_threads, original_messages)
           dbg.display_node_counters(message_tree, correct_threads)
-
+        
         used_nodes = []
         msg_rmv = [] # messages to remove at each iteration
         remaining_nodes = ids.copy()
-        messages = original_messages.copy() # use a copy
 
         # Accumulate loss and metrics across all threads in this example
         total_loss = 0
@@ -82,24 +110,25 @@ def training_loop():
             break
           # emb the entire conversation into one embedding as an input feature for the model
           # correct_thread is a tuple like (1, 1) or (2, 1), convert to 0-indexed
-          messages_emb = model.encode(messages)
+          current_messages = [] 
+          for node_id in remaining_nodes: 
+            current_messages.append(messages[node_id - 1])
 
-          num_possible_outputs = len(messages)
-        #  print("total of number possible messages for model to pick " + str(num_possible_outputs))
+          messages_emb = model.encode(current_messages)
 
+          num_possible_outputs = len(current_messages)
+       #   print("total of number possible messages for model to pick " + str(num_possible_outputs))
           # batch_size to 1 for initial testing
           input_tensor = torch.tensor(messages_emb).unsqueeze(0)
 
           # Debug: Show embedding info for first thread
           if dbg.should_show_debug_for_example(batch_idx) and thread_idx == 0:
-            dbg.display_embedding_info(messages, messages_emb, input_tensor)
-        #  print("input tensor shape : " + str(input_tensor.shape))
+            dbg.display_embedding_info(current_messages, messages_emb, input_tensor)
           thread_logits = cd_model(input_tensor) # shape [B, N]
-      #    print("thread_logits shape : " + str(thread_logits.shape))
 
           node_logits = thread_logits[0]
           # print(str(node_logits))
-          thread_probs = torch.sigmoid(node_logits)
+          thread_probs = torch.softmax(node_logits, dim=-1) # use softmax because of ListNet loss instead of BCE
           top_k = min(len(correct_thread), len(thread_probs)) # ensure k doesn't exceed available elements
           top_values, top_indices = torch.topk(thread_probs, k=top_k) 
          
@@ -107,29 +136,23 @@ def training_loop():
           pred_ids = []
           for idx in range(len(top_indices)):
             index = top_indices[idx].item()  # convert tensor to int
-            predicted.append(messages[index])
-            pred_ids.append(ids[index]) # ids that were predicted
-
+            pred_id = remaining_nodes[index] # find index of id predicted, the map to original message array
+            predicted.append(messages[pred_id - 1])
+            pred_ids.append(pred_id) # ids that were predicted
 
           f1_score = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
           used_nodes = list(correct_thread)
-         # print("These are the used nodes" +  str(used_nodes))
 
           correct_nodes = set(correct_thread)
           set_pred_ids = set(pred_ids) # turn into set
           true_labels = []
-          #print("Node logits shape : " + str(len(node_logits)))
-          #print("Ids model used for prediciton : " + str(pred_ids))
-          #print("Remaining ids to evaluate truth labels with length " + str(len(remaining_nodes)) + " : " + str(remaining_nodes) + "\n\n")
+
           for i, node_id in enumerate(remaining_nodes): # create truth labels for BCE loss function
           # Map logit position to node ID
             if node_id in correct_nodes:
               true_labels.append(1)
             else:
               true_labels.append(0)
-              
-          #print("These are truth labels with length " + str(len(node_logits)) + ": " + str(true_labels))
-         # print("These are logits with length : " + str(len(node_logits)))
 
           loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
           total_loss += loss
@@ -152,11 +175,8 @@ def training_loop():
           removed_nodes = [item.id for item in removed] # removed_nodes has shape [1,2,3]
           msg_rmv = used_nodes
 
-        #  print("These are the removed nodes: " + str(removed_nodes))
-          
           # Filter out removed nodes from both messages and ids for next iteration
           removed_set = set(removed_nodes)
-          messages = [msg for i, msg in enumerate(messages) if ids[i] not in removed_set]
           ids = [node_id for node_id in ids if node_id not in removed_set]
           # Teacher forcing: remove ground truth nodes vs. model predictions
           if TEACHER_FORCE is True:
@@ -206,6 +226,8 @@ def training_loop():
     # Save epoch data
     save_data(cd_model, optimizer, epoch + 1, epoch_avg_loss, epoch_avg_f1, epoch_avg_accuracy)
 
+def remove_messages(ids, messages): 
+  return messages
 
 def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy):
   """

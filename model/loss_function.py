@@ -1,3 +1,6 @@
+import torch
+import torch.nn.functional as F
+
 # use binary cross entropy as the loss function, with BCE threshold as a parameter as I will need to experiment with this 
 def compute_loss_f1(predicted, all_node_choices, correct_nodes): 
   num_predictions = len(predicted) 
@@ -20,6 +23,30 @@ def compute_loss_f1(predicted, all_node_choices, correct_nodes):
   f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
   return f1_score
 
-def compute_loss_BCE(): 
-  # might use this later if f1 score doesn't work well 
-  print("HI") 
+class ListNetLoss(torch.nn.Module):
+    def __init__(self):
+        super(ListNetLoss, self).__init__()
+
+    def forward(self, scores, relevance_labels):
+        """
+        Computes the ListNet loss using KL divergence.
+
+        Args:
+            scores (torch.Tensor): Predicted scores for documents in a query.
+                                   Shape: (batch_size, list_size)
+            relevance_labels (torch.Tensor): Ground-truth relevance labels for documents.
+                                             Shape: (batch_size, list_size)
+        Returns:
+            torch.Tensor: The computed ListNet loss.
+        """
+        # Convert scores and relevance labels to probability distributions
+        # using softmax. This creates the predicted and target ranking distributions.
+        predicted_probs = F.softmax(scores, dim=-1)
+        target_probs = F.softmax(relevance_labels, dim=-1)
+
+        # Compute KL divergence between the target and predicted distributions.
+        # F.kl_div expects log-probabilities for the input, so we apply log here.
+        # The reduction='batchmean' averages the loss across the batch.
+        loss = F.kl_div(predicted_probs.log(), target_probs, reduction='batchmean')
+
+        return loss
