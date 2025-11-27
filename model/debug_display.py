@@ -11,8 +11,8 @@ SHOW_EMBEDDING_INFO = False         # Print conversation embedding shapes
 SHOW_THREAD_PREDICTIONS = True     # Print model predictions per thread
 
 # Control how many examples/threads to show
-DEBUG_FIRST_N_EXAMPLES = 3         # Only show debug for first N examples
-DEBUG_FIRST_N_THREADS = 3          # Only show thread predictions for first N threads
+DEBUG_FIRST_N_EXAMPLES = 5        # Only show debug for first N examples
+DEBUG_FIRST_N_THREADS = 5          # Only show thread predictions for first N threads
 MAX_THREADS_TO_DISPLAY = 15        # Max threads to show in ground truth
 
 

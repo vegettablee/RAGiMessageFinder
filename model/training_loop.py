@@ -11,20 +11,21 @@ from loss_function import compute_loss_f1, ListNetLoss
 import debug_display as dbg
 import random
 
-EPOCHS = 10 # each epoch is roughly 153 examples
+EPOCHS = 5 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
 MAX_MESSAGES_PER_EXAMPLE = 15  # Limit conversation length for faster training
-NUM_EXAMPLES = 3000
+NUM_EXAMPLES = 3000 # number of examples to load, but not necessarily use 
 TEACHER_FORCE = True # when false, let the model choose freely
-PRUNE_SELF_NODES_PROB = 0.80 # only keep 20 percent of nodes who do not have any connections 
+PRUNE_SELF_NODES_PROB = 0.75 # only keep 20 percent of nodes who do not have any connections 
 PRUNE_LONG_NODES_PROB = 0.50 # only keep 75 percent of nodes that exceed length of 9 
 PRUNE_LONG_NODE_LEN = 9 # minimum node length to prune 
+EXAMPLES_PER_BACKPROP = 3
 
 model = SentenceTransformer("all-mpnet-base-v2")
 # loss_fn = nn.BCEWithLogitsLoss() # binary cross entropy 
-loss_fn = ListNetLoss() # 
+loss_fn = ListNetLoss() 
 
 # all nodes are a direct reference to a real message
 def training_loop():
@@ -34,22 +35,32 @@ def training_loop():
     optimizer = optim.Adam(cd_model.parameters(), lr=0.001) # adam optimizer
   
   dataset = load_dataset(split='train', num_examples=NUM_EXAMPLES)
+  # use these metrics keep track of class imbalances with the dataset
+  total_threads = 0 
+  num_long_threads = 0
+  num_lone_threads = 0 
+  num_long_pruned = 0 
+  num_lone_pruned = 0
+  total_examples = 0 
 
   for epoch in range(EPOCHS):
     print(f"\n{'='*80}")
     print(f"EPOCH {epoch + 1}/{EPOCHS}")
     print(f"{'='*80}\n")
 
-    # Track metrics per epoch
+    # track metrics per epoch
     epoch_f1_scores = []
     epoch_accuracies = []
     epoch_losses = []
+    epoch_precision_scores = []
+    epoch_recall_scores = []
+    epoch_specificity_scores = []
 
     dataloader = get_dataloader(dataset, batch_size=1, shuffle=True)
     for batch_idx, batch in enumerate(dataloader):
       for ex_idx, example in enumerate(batch):
-      # get training example(might add pre-processing)
-
+        # get training example(might add pre-processing)
+        total_examples += 1
         # Truncate to first N messages for faster training
         if len(example["raw"]) > MAX_MESSAGES_PER_EXAMPLE:
           example = {
@@ -68,22 +79,27 @@ def training_loop():
 
         #print("Messages before removing : " + str(messages))
         #print("Threads before removing : " + str(correct_threads) + "\n\n")
+        total_threads += len(correct_threads)
         for thread_idx, thread in enumerate(correct_threads):
           if len(thread) == 1: 
             rand = random.uniform(0.0, 1.0)
-            if(rand > PRUNE_SELF_NODES_PROB): 
+            num_lone_threads += 1
+            if(rand < PRUNE_SELF_NODES_PROB): 
               message_tree, removed = remove_used_nodes(message_tree, thread)
               root_id = removed[0].id
               # print("root id : " + str(root_id))
               ids.remove(root_id)
               correct_threads.remove(thread)
+              num_lone_pruned += 1
           if len(thread) > PRUNE_LONG_NODE_LEN: # sometimes prune nodes with exceedingly greater length 
+            num_long_threads += 1 
             rand = random.uniform(0.0, 1.0)
-            if(rand > PRUNE_LONG_NODES_PROB): 
+            if(rand < PRUNE_LONG_NODES_PROB): 
               message_tree, removed = remove_used_nodes(message_tree, thread)
               for node in removed: 
                 ids.remove(node.id)
               correct_threads.remove(thread)
+              num_long_pruned += 1
               # remove redundant threads 
         #print("Messages after removing : " + str(messages))
         #print("Threads after removing : " + str(correct_threads))
@@ -103,6 +119,9 @@ def training_loop():
         total_loss = 0
         example_f1_scores = []
         example_accuracies = []
+        example_precision_scores = []
+        example_recall_scores = []
+        example_specificity_scores = []
         optimizer.zero_grad()
 
         for thread_idx, correct_thread in enumerate(correct_threads):
@@ -140,17 +159,18 @@ def training_loop():
             predicted.append(messages[pred_id - 1])
             pred_ids.append(pred_id) # ids that were predicted
 
-          f1_score = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
+          f1_score, precision, recall, specificity = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
           used_nodes = list(correct_thread)
 
           correct_nodes = set(correct_thread)
           set_pred_ids = set(pred_ids) # turn into set
           true_labels = []
-
-          for i, node_id in enumerate(remaining_nodes): # create truth labels for BCE loss function
+          rank_range = len(correct_thread) # first used nodes get higher rank for model to learn importance 
+          for i, node_id in enumerate(remaining_nodes): # create truth labels for listnet loss function
           # Map logit position to node ID
             if node_id in correct_nodes:
-              true_labels.append(1)
+              true_labels.append(rank_range)
+              rank_range += -1 # decrement 
             else:
               true_labels.append(0)
 
@@ -158,16 +178,23 @@ def training_loop():
           total_loss += loss
 
           # calculate accuracy: intersection of predicted and ground truth
-          pred_set = set(pred_ids)
-          correct_set = set(correct_thread)
-          if len(pred_set) > 0:
-            accuracy = len(pred_set.intersection(correct_set)) / len(pred_set)
-          else:
-            accuracy = 0.0
-
+          # accuracy is determined by whether the model predicted correct nodes as well as had the correct order 
+          total_correct = 0
+          for idx, pred in enumerate(pred_ids): 
+            if pred_ids[idx] == correct_thread[idx]:
+              total_correct += 1 
+    
+          if total_correct == 0: # no correct predictions
+            accuracy = 0
+          else: 
+            accuracy = total_correct / len(correct_thread)
+        
           # track metrics
           example_f1_scores.append(f1_score)
           example_accuracies.append(accuracy)
+          example_precision_scores.append(precision)
+          example_recall_scores.append(recall)
+          example_specificity_scores.append(specificity)
           
           # remove used nodes from ids 
           # remove used messages from messages for next iteration 
@@ -206,7 +233,10 @@ def training_loop():
           # epoch metrics
           epoch_f1_scores.extend(example_f1_scores)
           epoch_accuracies.extend(example_accuracies)
-          epoch_losses.append(total_loss.item())
+          epoch_precision_scores.extend(example_precision_scores)
+          epoch_recall_scores.extend(example_recall_scores)
+          epoch_specificity_scores.extend(example_specificity_scores)
+          epoch_losses.append(average_loss)
 
           # Print example summary
           print(f"Example average {batch_idx + 1}/{len(dataset)} | Loss: {average_loss} | Avg F1: {avg_f1:.4f} | Avg Accuracy: {avg_accuracy:.4f}")
@@ -215,21 +245,34 @@ def training_loop():
     epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0.0
     epoch_avg_f1 = sum(epoch_f1_scores) / len(epoch_f1_scores) if epoch_f1_scores else 0.0
     epoch_avg_accuracy = sum(epoch_accuracies) / len(epoch_accuracies) if epoch_accuracies else 0.0
+    epoch_avg_precision = sum(epoch_precision_scores) / len(epoch_precision_scores) if epoch_precision_scores else 0.0
+    epoch_avg_recall = sum(epoch_recall_scores) / len(epoch_recall_scores) if epoch_recall_scores else 0.0
+    epoch_avg_specificity = sum(epoch_specificity_scores) / len(epoch_specificity_scores) if epoch_specificity_scores else 0.0
+
+    thread_metrics = {
+    "percentage_long_pruned" : (num_long_threads - num_long_pruned) / total_threads, # percentage kept relative to pruned for long threads
+    "percentage_lone_pruned" : (num_lone_threads - num_lone_pruned) / total_threads, # percentage kept relative to prune for lone threads 
+    "percentage_long_threads" : (num_long_threads / total_threads), # percentage of long threads relative to the entire dataset
+    "percentage_lone_threads" : num_lone_threads / total_threads, # percentage of lone threads relative to the entire dataset 
+    }
     print(f"\n{'='*80}")
     print(f"EPOCH {epoch + 1} SUMMARY")
     print(f"{'='*80}")
-    print(f"Average Loss:     {epoch_avg_loss:.4f}")
-    print(f"Average F1 Score: {epoch_avg_f1:.4f}")
-    print(f"Average Accuracy: {epoch_avg_accuracy:.4f}")
+    print(f"Average Loss:        {epoch_avg_loss:.4f}")
+    print(f"Average F1 Score:    {epoch_avg_f1:.4f}")
+    print(f"Average Accuracy:    {epoch_avg_accuracy:.4f}")
+    print(f"Average Precision:   {epoch_avg_precision:.4f}")
+    print(f"Average Recall:      {epoch_avg_recall:.4f}")
+    print(f"Average Specificity: {epoch_avg_specificity:.4f}")
     print(f"{'='*80}\n")
 
     # Save epoch data
-    save_data(cd_model, optimizer, epoch + 1, epoch_avg_loss, epoch_avg_f1, epoch_avg_accuracy)
+    save_data(cd_model, optimizer, epoch + 1, epoch_avg_loss, epoch_avg_f1, epoch_avg_accuracy, epoch_avg_precision, epoch_avg_recall, epoch_avg_specificity, thread_metrics, total_examples)
 
 def remove_messages(ids, messages): 
   return messages
 
-def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy):
+def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, avg_precision, avg_recall, avg_specificity, thread_metrics, total_examples):
   """
   Save training run data including model config and metrics.
 
@@ -240,6 +283,9 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy):
     avg_loss: Average loss for the epoch
     avg_f1: Average F1 score for the epoch
     avg_accuracy: Average accuracy for the epoch
+    avg_precision: Average precision for the epoch
+    avg_recall: Average recall for the epoch
+    avg_specificity: Average specificity for the epoch
   """
   import json
   from datetime import datetime
@@ -257,15 +303,24 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy):
     'metrics': {
       'avg_loss': avg_loss,
       'avg_f1_score': avg_f1,
-      'avg_accuracy': avg_accuracy
+      'avg_accuracy': avg_accuracy,
+      'avg_precision': avg_precision,
+      'avg_recall': avg_recall,
+      'avg_specificity': avg_specificity,
+    },
+    'thread_metrics' : { 
+      'percentage_kept_long_threads' : thread_metrics["percentage_long_pruned"], 
+      'percentage_kept_lone_threads' : thread_metrics["percentage_lone_pruned"],
+      'percentage_total_long_threads' : thread_metrics["percentage_long_threads"], 
+      'percentage_total_lone_threads' : thread_metrics["percentage_lone_threads"]
     },
     'model_config': model_config,
     'training_config': {
       'learning_rate': learning_rate,
       'optimizer': type(optimizer).__name__,
-      'loss_function': 'BCEWithLogitsLoss',
+      'loss_function': 'ListNetLoss',
       'max_messages_per_example': MAX_MESSAGES_PER_EXAMPLE,
-      'num_examples': NUM_EXAMPLES,
+      'num_examples': total_examples,
       'batch_size': BATCH_SIZE,
       'f1_threshold': F1_THRESHOLD
     }
@@ -273,8 +328,22 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy):
 
   # Save to file
   filename = f"results.json"
+
+  # Read existing results if file exists
+  try:
+    with open(filename, 'r') as f:
+      results = json.load(f)
+      if not isinstance(results, list):
+        results = [results]  # Convert old format to list
+  except (FileNotFoundError, json.JSONDecodeError):
+    results = []
+
+  # Append new run data
+  results.append(run_data)
+
+  # Write updated results back
   with open(filename, 'w') as f:
-    json.dump(run_data, f, indent=2)
+    json.dump(results, f, indent=2)
 
   print(f"Saved training data to {filename}")
   return run_data 

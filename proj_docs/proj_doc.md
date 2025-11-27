@@ -289,9 +289,6 @@ First output head : models predictions for every node in num_candidates
 - pred_nodes = topk(nodes, k=top_k)
 - pred_indices = index relative to remaining nodes 
 
-Second output head : models prediction whether to keep every node in num_candidates 
-- have the model predict the first correct node based on the ground truth, then if this is above a certain threshold 
-- remove the other nodes used in the ground truth 
 
 Loss Function : Binary Cross Entropy(BCE) 
 - normalize first output head and second output head for one main score 
@@ -312,3 +309,53 @@ Things to Research/Answer:
 - search random masking
 - - either randomly mask words inside of the messages, or mask recipients and/or  
 - start thinking about attention once training goes well 
+
+## Reworked First prototype architecture after first implementation
+
+changes from first prototype : 
+- changed loss function from BCE to ListNetLoss 
+- added more evaluation metrics 
+- one output head instead of two, this because when computing the correct threads from a given example, nodes do not repeat their 
+- - references, so removing them at each iteration just makes more sense instead of having a separate output head
+
+Main Variables : 
+node = message with position relative in the conversation 
+- ex. node 11 = 11th message in the entire conversation(sorted by time) 
+
+correct_thread = nodes that the model is currently trying to predict 
+- ex. nodes (1,2)
+
+num_candidates = number of remaining nodes that can be guessed
+- ex. model guessed nodes (1,2) already
+- remaining nodes = (3,4,5,6,7)
+- num_candidates = length of remaining nodes = 5
+
+top_k = how many nodes for the model to predict at each run, based on the length of correct thread
+- ex. correct_thread = (1,3), top_k = 2
+
+Architecture
+Input features : [batch_size, num_candidates, emb]
+Layer 1 : 256
+Layer 2 : 128 
+Layer 3 : 64
+Layer 4 : One output head with shape [batch_size, num_candidates] 
+
+First output head : models predictions for every node in num_candidates  
+- pred_nodes = topk(nodes, k=top_k)
+- pred_indices = index relative to remaining nodes 
+
+Loss Function : ListNetLoss
+- using a listwise ranking loss function, this is because I want to train the model to understand that ranking does matter 
+- especially with conversational data 
+
+Added Evaluation Metrics : 
+- f1 score : based on predicted node membership 
+- - precision, recall, specificity based on predicted nodes and whether they are 
+- accuracy : based on predicted node membership as well as correct index
+- - this is because I want to see how well the model can predict nodes with correct ordering 
+
+Added Features : 
+- random pruning of threads with only one message 
+- random pruning of threads exceeding a certain length 
+- - i found that a big portion of the dataset has lone nodes, which make up roughly 40% of the training data, and while there are 
+- - significantly fewer longer threads, i'll play around with what to keep based on results 
