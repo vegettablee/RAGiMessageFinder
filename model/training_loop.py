@@ -11,17 +11,18 @@ from loss_function import compute_loss_f1, ListNetLoss
 import debug_display as dbg
 import random
 
-EPOCHS = 5 # each epoch is roughly 153 examples
+EPOCHS = 25 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
-MAX_MESSAGES_PER_EXAMPLE = 15  # Limit conversation length for faster training
-NUM_EXAMPLES = 3000 # number of examples to load, but not necessarily use 
+MAX_MESSAGES_PER_EXAMPLE = 17 # limit conversation length for faster training
+NUM_EXAMPLES = 5000 # number of examples to load, but not necessarily use 
 TEACHER_FORCE = True # when false, let the model choose freely
-PRUNE_SELF_NODES_PROB = 0.75 # only keep 20 percent of nodes who do not have any connections 
-PRUNE_LONG_NODES_PROB = 0.50 # only keep 75 percent of nodes that exceed length of 9 
-PRUNE_LONG_NODE_LEN = 9 # minimum node length to prune 
-EXAMPLES_PER_BACKPROP = 3
+PRUNE_SELF_NODES_PROB = 0.75 # only keep 25 percent of nodes who do not have any connections 
+PRUNE_LONG_NODES_PROB = 0.25 # only keep 25 percent of nodes that exceed length of 8
+PRUNE_LONG_NODE_LEN = 8 # minimum node length to prune 
+INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
+
 
 model = SentenceTransformer("all-mpnet-base-v2")
 # loss_fn = nn.BCEWithLogitsLoss() # binary cross entropy 
@@ -124,9 +125,16 @@ def training_loop():
         example_specificity_scores = []
         optimizer.zero_grad()
 
+        num_threads_skipped = 0 
+
         for thread_idx, correct_thread in enumerate(correct_threads):
           if thread_idx == len(original_messages) - 1: # to handle cases like this where node 12 (counter: 0) -> connected to: []
             break
+          if thread_idx == len(correct_threads) - 1: # on last thread
+            if len(correct_thread) == 1: # only keep if thread is not a lone-node
+              num_threads_skipped += 1
+              #print("skipped last lone thread : " + str(correct_thread))
+              break
           # emb the entire conversation into one embedding as an input feature for the model
           # correct_thread is a tuple like (1, 1) or (2, 1), convert to 0-indexed
           current_messages = [] 
@@ -136,7 +144,7 @@ def training_loop():
           messages_emb = model.encode(current_messages)
 
           num_possible_outputs = len(current_messages)
-       #   print("total of number possible messages for model to pick " + str(num_possible_outputs))
+          # print("total of number possible messages for model to pick " + str(num_possible_outputs))
           # batch_size to 1 for initial testing
           input_tensor = torch.tensor(messages_emb).unsqueeze(0)
 
@@ -228,7 +236,7 @@ def training_loop():
           # example-level metrics
           avg_f1 = sum(example_f1_scores) / len(example_f1_scores) if example_f1_scores else 0.0
           avg_accuracy = sum(example_accuracies) / len(example_accuracies) if example_accuracies else 0.0 
-          average_loss = total_loss.item() / len(correct_threads)
+          average_loss = total_loss.item() / (len(correct_threads) - num_threads_skipped)
 
           # epoch metrics
           epoch_f1_scores.extend(example_f1_scores)
@@ -273,20 +281,7 @@ def remove_messages(ids, messages):
   return messages
 
 def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, avg_precision, avg_recall, avg_specificity, thread_metrics, total_examples):
-  """
-  Save training run data including model config and metrics.
 
-  Args:
-    cd_model: The CDModel instance
-    optimizer: The optimizer being used
-    epoch_num: Current epoch number
-    avg_loss: Average loss for the epoch
-    avg_f1: Average F1 score for the epoch
-    avg_accuracy: Average accuracy for the epoch
-    avg_precision: Average precision for the epoch
-    avg_recall: Average recall for the epoch
-    avg_specificity: Average specificity for the epoch
-  """
   import json
   from datetime import datetime
 
@@ -322,7 +317,8 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, av
       'max_messages_per_example': MAX_MESSAGES_PER_EXAMPLE,
       'num_examples': total_examples,
       'batch_size': BATCH_SIZE,
-      'f1_threshold': F1_THRESHOLD
+      'f1_threshold': F1_THRESHOLD, 
+      'using_attention' : "TRUE", 
     }
   }
 

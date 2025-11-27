@@ -28,7 +28,7 @@ class CDModel(nn.Module):
         self.hidden_dim3 = hidden_dim3
         self.dropout_rate = dropout_rate
 
-        self.attn = nn.MultiheadAttention(embed_dim=input_dim, num_heads=8, batch_first=True)
+        self.attn = nn.MultiheadAttention(embed_dim=input_dim, num_heads=4, batch_first=True)
 
         # Define shared backbone layers
         self.fc1 = nn.Linear(input_dim, hidden_dim1)
@@ -44,6 +44,10 @@ class CDModel(nn.Module):
 
     def forward(self, x):
         # x shape: [batch_size, num_candidates, input_dim]
+
+        # Self-attention layer
+        attn_output, _ = self.attn(x, x, x)  # Query, Key, Value all from same input
+        x = x + attn_output  # Residual connection
 
         # Shared backbone
         # Layer 1
@@ -76,8 +80,12 @@ class CDModel(nn.Module):
             dict: Model configuration parameters
         """
         config = {
-            'architecture': 'CDModel (Multi-head)',
+            'architecture': 'CDModel (Multi-head + Self-Attention)',
             'input_dim': self.input_dim,
+            'attention': {
+                'num_heads': 4,
+                'embed_dim': self.input_dim
+            },
             'hidden_dim1': self.hidden_dim1,
             'hidden_dim2': self.hidden_dim2,
             'hidden_dim3': self.hidden_dim3,
