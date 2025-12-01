@@ -359,3 +359,75 @@ Added Features :
 - random pruning of threads exceeding a certain length 
 - - i found that a big portion of the dataset has lone nodes, which make up roughly 40% of the training data, and while there are 
 - - significantly fewer longer threads, i'll play around with what to keep based on results 
+
+
+
+## First Prototype Results 
+
+From what I've found, I tested my model on a general example, not part of the IRC dataset, and the results are seeming promising. 
+The biggest issue is that I need to force the model to rank the first node higher, but in terms of understanding that the task at hand is to extract micro-threads from a bigger conversation is definitely apparent. The model understands what to look for as seen in this test example : 
+
+CONVERSATION:
+  [1] [08:10] <mia> good morning everyone, anyone know a good iced latte recipe?
+  [2] [08:11] <sam> mia: depends, do you like it sweet or strong?
+  [3] [08:11] <lily> morning! anyone going to the farmer's market today?
+  [4] [08:12] <mia> sam: probably sweet, something similar to starbucks caramel
+  [5] [08:12] <jake> lily: I might go later, what are you looking to buy?
+  [6] [08:13] <sam> mia: try adding a teaspoon of vanilla syrup + caramel drizzle
+  [7] [08:14] <lily> jake: just flowers and maybe some peaches
+  [8] [08:14] <mia> sam: oooh that sounds perfect thank you!
+  [9] [08:15] <oliver> anyone free to grab coffee later today?
+  [10] [08:16] <jake> oliver: I could, around noon maybe?
+
+GROUND TRUTH (3 threads):
+  Thread 1: [1, 2, 4, 6, 8]
+  Thread 2: [3, 5, 7]
+  Thread 3: [9, 10]
+
+MODEL PREDICTIONS:
+  Thread 1: [1, 2, 4, 6, 8] | Predicted [8, 1, 2, 4, 10] 
+  Thread sorted 1: [1, 2, 4, 6, 8] | Predicted [1, 2, 4, 8, 10] 
+  Thread 2: [3, 5, 7] | Predicted [9, 10, 5] 
+  Thread sorted 2: [3, 5, 7] | Predicted [5, 9, 10] 
+  Thread 3: [9, 10] | Predicted [9, 10] 
+  Thread sorted 3: [9, 10] | Predicted [9, 10] 
+
+
+Even though the model is not sorting in the right order, when sorted, it's prediction are not significantly off. It understands that iced lattes are related to being sweet/string, as well as pertaining to starbucks and caramel. It did get confused on node 10, but this is actually okay because even though the conversation might be wrong, any normal person reading this might actually make the same prediction so it's okay. 
+
+Additionally, these were my results after training on the entire dataset(30 EPOCHS) : 
+
+"epoch": 30,
+    "metrics": {
+      "avg_loss": 0.4365115914752108,
+      "avg_f1_score": 0.8464388615676168,
+      "avg_accuracy": 0.5879246389439522,
+      "avg_precision": 0.8467408803245713,
+      "avg_recall": 0.8462640086030644,
+      "avg_specificity": 0.8112846301687503
+    }
+  
+  Genuinely, considering that accuracy is tied directly to ranking, these are promising scores, especially for specificity as well as f1 score. And the loss has gone down tremendously. 
+
+# Next Steps For Better Accuracy/Ranking 
+
+In order to let this model behave freely, I realized that I need to add another output head, and this will be used directly to determine what nodes should be part of the conversation. So instead of manually having to pull top-k after softmax, this second output head will determine what nodes to choose based on top-k. Might have to add a heavy punishment, so that whenever the model chooses values for softmax, if the sigmoid scores are not above a threshold at the same index, increase the loss significantly. 
+
+The truth label will have a similar shape to the ListNetLoss truth labels, but be labeled 0 and 1, instead of descending based on top-k.
+
+Second output head : [batch_size, num_candidates] 
+
+- Sigmoid Activation Function : 0.75 threshold for keeping nodes as part of the sequence.
+
+
+New Loss Functions to Try : 
+1st Approach : Use a joint loss, concacenate the losses into one representation 
+- Treat both heads as part of the same task, because eventually I want the second output head to guide the first output head, so when chosen, the first output head has the ranking, and the second one says what to choose for the ranking. I'm going with this first because it has the highest chance of tying both output heads closest together. 
+
+2nd Approach : Add both losses separately and divide by number of output heads 
+- Treat each head independently, see how training goes
+
+Steps to try during training : 
+- Start with teacher forcing top-k at the very beginning, then, on EPOCH 15, switch so that the model starts choosing top-k based on sigmoid activations, and then grade the loss from there. 
+
+

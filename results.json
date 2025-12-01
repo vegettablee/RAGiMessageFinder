@@ -3753,5 +3753,2695 @@
       "f1_threshold": 0.5,
       "using_attention": "TRUE"
     }
+  },
+  {
+    "timestamp": "2025-11-27T20:04:03.831395",
+    "epoch": 1,
+    "metrics": {
+      "avg_loss": 1.1007224017861568,
+      "avg_f1_score": 0.4068956941751059,
+      "avg_accuracy": 0.18694172861452274,
+      "avg_precision": 0.40720615169144575,
+      "avg_recall": 0.40671595561301443,
+      "avg_specificity": 0.583901231529908
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.005076142131979695,
+      "percentage_kept_lone_threads": 0.09306260575296109,
+      "percentage_total_long_threads": 0.028764805414551606,
+      "percentage_total_lone_threads": 0.4196277495769882
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 153,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:04:58.686420",
+    "epoch": 2,
+    "metrics": {
+      "avg_loss": 1.1067851372984845,
+      "avg_f1_score": 0.4089679435172997,
+      "avg_accuracy": 0.18612593891563847,
+      "avg_precision": 0.4092699622742541,
+      "avg_recall": 0.4087930905527472,
+      "avg_specificity": 0.6025422558684361
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006345177664974619,
+      "percentage_kept_lone_threads": 0.10025380710659898,
+      "percentage_total_long_threads": 0.027495769881556685,
+      "percentage_total_lone_threads": 0.42174280879864634
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 306,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:05:54.190828",
+    "epoch": 3,
+    "metrics": {
+      "avg_loss": 1.1035755647302898,
+      "avg_f1_score": 0.39796491315115956,
+      "avg_accuracy": 0.178445372678897,
+      "avg_precision": 0.3982673645997428,
+      "avg_recall": 0.39778980968092714,
+      "avg_specificity": 0.5922478210264743
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0056401579244218835,
+      "percentage_kept_lone_threads": 0.10321489001692047,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.4224478285391991
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 459,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:06:45.112150",
+    "epoch": 4,
+    "metrics": {
+      "avg_loss": 1.104161903122882,
+      "avg_f1_score": 0.4241018830020277,
+      "avg_accuracy": 0.1970018564808724,
+      "avg_precision": 0.4244073983581943,
+      "avg_recall": 0.42392500569056285,
+      "avg_specificity": 0.6063262995245629
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.005710659898477157,
+      "percentage_kept_lone_threads": 0.10279187817258884,
+      "percentage_total_long_threads": 0.02728426395939086,
+      "percentage_total_lone_threads": 0.4211082910321489
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 612,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:07:38.209972",
+    "epoch": 5,
+    "metrics": {
+      "avg_loss": 1.1182113303805354,
+      "avg_f1_score": 0.4540510435532081,
+      "avg_accuracy": 0.2194160857580771,
+      "avg_precision": 0.45435567719117503,
+      "avg_recall": 0.45387467671017456,
+      "avg_specificity": 0.6253598413771574
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.005922165820642978,
+      "percentage_kept_lone_threads": 0.10321489001692047,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.4214890016920474
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 765,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:08:30.929677",
+    "epoch": 6,
+    "metrics": {
+      "avg_loss": 1.070929202456511,
+      "avg_f1_score": 0.48026708012194225,
+      "avg_accuracy": 0.2635440615665579,
+      "avg_precision": 0.48057348231513686,
+      "avg_recall": 0.48008968937851376,
+      "avg_specificity": 0.6200594277517355
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.005781161872532431,
+      "percentage_kept_lone_threads": 0.10250987027636774,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.42103778905809364
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 918,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:09:21.880882",
+    "epoch": 7,
+    "metrics": {
+      "avg_loss": 1.069511814398649,
+      "avg_f1_score": 0.4707752208109351,
+      "avg_accuracy": 0.24623745698745697,
+      "avg_precision": 0.4710768081125224,
+      "avg_recall": 0.47060061763633193,
+      "avg_specificity": 0.6204328469149898
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006163886874546773,
+      "percentage_kept_lone_threads": 0.10273144790911289,
+      "percentage_total_long_threads": 0.026951897510273146,
+      "percentage_total_lone_threads": 0.4205946337926033
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1071,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:10:13.601502",
+    "epoch": 8,
+    "metrics": {
+      "avg_loss": 1.0674813471827889,
+      "avg_f1_score": 0.4988032454152283,
+      "avg_accuracy": 0.26421104256339634,
+      "avg_precision": 0.4991044024924196,
+      "avg_recall": 0.49862889131790705,
+      "avg_specificity": 0.6265679953269112
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006873942470389171,
+      "percentage_kept_lone_threads": 0.10300338409475465,
+      "percentage_total_long_threads": 0.027178510998307953,
+      "percentage_total_lone_threads": 0.4207910321489002
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1224,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:11:04.428756",
+    "epoch": 9,
+    "metrics": {
+      "avg_loss": 1.0308173699580343,
+      "avg_f1_score": 0.4941730144855145,
+      "avg_accuracy": 0.26717666821227865,
+      "avg_precision": 0.49447986203073413,
+      "avg_recall": 0.4939953659067031,
+      "avg_specificity": 0.6244774443902351
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006956194773453657,
+      "percentage_kept_lone_threads": 0.1021808610641098,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.42047377326565144
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1377,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:11:56.664138",
+    "epoch": 10,
+    "metrics": {
+      "avg_loss": 1.01693888464673,
+      "avg_f1_score": 0.5083415110316114,
+      "avg_accuracy": 0.2831232492997199,
+      "avg_precision": 0.5086443964134064,
+      "avg_recall": 0.5081661563368881,
+      "avg_specificity": 0.6289317449647436
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0071912013536379014,
+      "percentage_kept_lone_threads": 0.10321489001692047,
+      "percentage_total_long_threads": 0.0272419627749577,
+      "percentage_total_lone_threads": 0.4211505922165821
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1530,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:12:48.433039",
+    "epoch": 11,
+    "metrics": {
+      "avg_loss": 0.9922161846206139,
+      "avg_f1_score": 0.5337720604700373,
+      "avg_accuracy": 0.2800281626690586,
+      "avg_precision": 0.5340771343300246,
+      "avg_recall": 0.5335954387616237,
+      "avg_specificity": 0.6499332234881368
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007306568220273804,
+      "percentage_kept_lone_threads": 0.10413782495000769,
+      "percentage_total_long_threads": 0.027303491770496846,
+      "percentage_total_lone_threads": 0.4218581756652823
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1683,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:13:37.467865",
+    "epoch": 12,
+    "metrics": {
+      "avg_loss": 0.9946069814514615,
+      "avg_f1_score": 0.5462763237727059,
+      "avg_accuracy": 0.2881617297319179,
+      "avg_precision": 0.5465818391288725,
+      "avg_recall": 0.546099446461241,
+      "avg_specificity": 0.6513183612496203
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007402707275803722,
+      "percentage_kept_lone_threads": 0.1044839255499154,
+      "percentage_total_long_threads": 0.027495769881556685,
+      "percentage_total_lone_threads": 0.42223632261703326
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1836,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:14:29.131574",
+    "epoch": 13,
+    "metrics": {
+      "avg_loss": 1.001667090555878,
+      "avg_f1_score": 0.54970271740658,
+      "avg_accuracy": 0.29610358247697305,
+      "avg_precision": 0.5500047361635344,
+      "avg_recall": 0.5495278644420275,
+      "avg_specificity": 0.6539585732182299
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007223740726278798,
+      "percentage_kept_lone_threads": 0.10464662241311988,
+      "percentage_total_long_threads": 0.027333073018352205,
+      "percentage_total_lone_threads": 0.4222959781335416
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1989,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:15:19.318693",
+    "epoch": 14,
+    "metrics": {
+      "avg_loss": 0.9911957340834834,
+      "avg_f1_score": 0.5548205247133818,
+      "avg_accuracy": 0.32082374768089056,
+      "avg_precision": 0.5551221120149692,
+      "avg_recall": 0.5546459215387787,
+      "avg_specificity": 0.6562654528011671
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007251631617113851,
+      "percentage_kept_lone_threads": 0.10514865844815083,
+      "percentage_total_long_threads": 0.027374909354604786,
+      "percentage_total_lone_threads": 0.42240754169688177
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2142,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:16:11.261140",
+    "epoch": 15,
+    "metrics": {
+      "avg_loss": 0.9239013921935932,
+      "avg_f1_score": 0.5935254393887488,
+      "avg_accuracy": 0.34095295192417496,
+      "avg_precision": 0.5938291963831532,
+      "avg_recall": 0.5933495800761988,
+      "avg_specificity": 0.6807554236331215
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007219402143260011,
+      "percentage_kept_lone_threads": 0.10513254371122391,
+      "percentage_total_long_threads": 0.027298364354201916,
+      "percentage_total_lone_threads": 0.42233502538071066
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2295,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:17:03.212121",
+    "epoch": 16,
+    "metrics": {
+      "avg_loss": 0.9103122453934317,
+      "avg_f1_score": 0.6009151540134446,
+      "avg_accuracy": 0.3339404936627159,
+      "avg_precision": 0.6012158820919504,
+      "avg_recall": 0.6007410482837834,
+      "avg_specificity": 0.6806770251748885
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007296954314720812,
+      "percentage_kept_lone_threads": 0.10585871404399323,
+      "percentage_total_long_threads": 0.02728426395939086,
+      "percentage_total_lone_threads": 0.42274746192893403
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2448,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:17:57.799929",
+    "epoch": 17,
+    "metrics": {
+      "avg_loss": 0.8354231801101861,
+      "avg_f1_score": 0.6444562641968982,
+      "avg_accuracy": 0.3983589137407581,
+      "avg_precision": 0.6447604588814964,
+      "avg_recall": 0.6442801514847625,
+      "avg_specificity": 0.6941665283163843
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007216084403304469,
+      "percentage_kept_lone_threads": 0.10570319498357719,
+      "percentage_total_long_threads": 0.02717229023589131,
+      "percentage_total_lone_threads": 0.4228625460336419
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2601,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:18:50.490133",
+    "epoch": 18,
+    "metrics": {
+      "avg_loss": 0.8004483603674268,
+      "avg_f1_score": 0.6771739941176358,
+      "avg_accuracy": 0.42695409519831484,
+      "avg_precision": 0.6774790679776229,
+      "avg_recall": 0.6769973724092222,
+      "avg_specificity": 0.7100027501400333
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0072852039857116,
+      "percentage_kept_lone_threads": 0.10551795450272608,
+      "percentage_total_long_threads": 0.02716676066929874,
+      "percentage_total_lone_threads": 0.42287084038353073
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2754,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:19:44.909872",
+    "epoch": 19,
+    "metrics": {
+      "avg_loss": 0.7704042391386028,
+      "avg_f1_score": 0.6785064823746773,
+      "avg_accuracy": 0.4309217843601798,
+      "avg_precision": 0.6788089338232605,
+      "avg_recall": 0.6783313789044448,
+      "avg_specificity": 0.7032878495271045
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007168937572357289,
+      "percentage_kept_lone_threads": 0.10584201620803277,
+      "percentage_total_long_threads": 0.027117285599786267,
+      "percentage_total_lone_threads": 0.42305637189420253
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2907,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:20:38.793621",
+    "epoch": 20,
+    "metrics": {
+      "avg_loss": 0.7428056339089218,
+      "avg_f1_score": 0.7020097547210223,
+      "avg_accuracy": 0.4406298552777426,
+      "avg_precision": 0.7023070943141365,
+      "avg_recall": 0.7018376107460614,
+      "avg_specificity": 0.7354654656767332
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007021996615905245,
+      "percentage_kept_lone_threads": 0.10689509306260575,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.4235617597292724
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3060,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:21:33.459989",
+    "epoch": 21,
+    "metrics": {
+      "avg_loss": 0.7060128986637917,
+      "avg_f1_score": 0.7064380104655866,
+      "avg_accuracy": 0.45453834989393765,
+      "avg_precision": 0.7067444126587813,
+      "avg_recall": 0.7062606197221583,
+      "avg_specificity": 0.7231267160512443
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.00680847635162356,
+      "percentage_kept_lone_threads": 0.106921279510112,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.4235758601240835
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3213,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:22:26.904497",
+    "epoch": 22,
+    "metrics": {
+      "avg_loss": 0.6845010693603092,
+      "avg_f1_score": 0.7202298344845378,
+      "avg_accuracy": 0.478766417695506,
+      "avg_precision": 0.7205353498407044,
+      "avg_recall": 0.7200529571730729,
+      "avg_specificity": 0.7442206069376837
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.00676818950930626,
+      "percentage_kept_lone_threads": 0.10702199661590525,
+      "percentage_total_long_threads": 0.02707275803722504,
+      "percentage_total_lone_threads": 0.4238194123980926
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3366,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:23:21.049738",
+    "epoch": 23,
+    "metrics": {
+      "avg_loss": 0.6291706979903879,
+      "avg_f1_score": 0.7435028371723651,
+      "avg_accuracy": 0.49580631774837786,
+      "avg_precision": 0.7438048559293194,
+      "avg_recall": 0.7433279842078124,
+      "avg_specificity": 0.7516019110439712
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006804973147943795,
+      "percentage_kept_lone_threads": 0.10722430662841169,
+      "percentage_total_long_threads": 0.027109541675862575,
+      "percentage_total_lone_threads": 0.42382108438166705
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3519,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:24:16.459663",
+    "epoch": 24,
+    "metrics": {
+      "avg_loss": 0.6445697719770678,
+      "avg_f1_score": 0.7517802202433634,
+      "avg_accuracy": 0.5173086128058312,
+      "avg_precision": 0.7520738379222384,
+      "avg_recall": 0.751610231060857,
+      "avg_specificity": 0.7594732979121017
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006909193457416808,
+      "percentage_kept_lone_threads": 0.10797377326565144,
+      "percentage_total_long_threads": 0.02721376198533559,
+      "percentage_total_lone_threads": 0.4237873660462493
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3672,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:25:11.568320",
+    "epoch": 25,
+    "metrics": {
+      "avg_loss": 0.5714313778493303,
+      "avg_f1_score": 0.767334800416697,
+      "avg_accuracy": 0.5137207460483323,
+      "avg_precision": 0.7676381209786383,
+      "avg_recall": 0.7671591937755731,
+      "avg_specificity": 0.7641937743769641
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006835871404399323,
+      "percentage_kept_lone_threads": 0.10825719120135364,
+      "percentage_total_long_threads": 0.027140439932318104,
+      "percentage_total_lone_threads": 0.4238917089678511
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3825,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:26:04.313533",
+    "epoch": 26,
+    "metrics": {
+      "avg_loss": 0.564181179463756,
+      "avg_f1_score": 0.777238152346848,
+      "avg_accuracy": 0.5230901304814348,
+      "avg_precision": 0.777544110478893,
+      "avg_recall": 0.7770610186914535,
+      "avg_specificity": 0.7639303711586319
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.00676818950930626,
+      "percentage_kept_lone_threads": 0.10796563842249121,
+      "percentage_total_long_threads": 0.027137836782506832,
+      "percentage_total_lone_threads": 0.4236951711571001
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 3978,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:26:57.161416",
+    "epoch": 27,
+    "metrics": {
+      "avg_loss": 0.5124158544298361,
+      "avg_f1_score": 0.8105567469883709,
+      "avg_accuracy": 0.5701600512497949,
+      "avg_precision": 0.8108574750668767,
+      "avg_recall": 0.8103826412587096,
+      "avg_specificity": 0.7842347744057147
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006830857930688726,
+      "percentage_kept_lone_threads": 0.10813436109544401,
+      "percentage_total_long_threads": 0.027104092247916274,
+      "percentage_total_lone_threads": 0.42366986275615715
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 4131,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:27:47.297314",
+    "epoch": 28,
+    "metrics": {
+      "avg_loss": 0.4683233524176628,
+      "avg_f1_score": 0.8146648636823308,
+      "avg_accuracy": 0.5673546290358518,
+      "avg_precision": 0.8149721578760879,
+      "avg_recall": 0.8144869565175242,
+      "avg_specificity": 0.7807499370272296
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006798404641044235,
+      "percentage_kept_lone_threads": 0.1080190959632584,
+      "percentage_total_long_threads": 0.027042542905487067,
+      "percentage_total_lone_threads": 0.4236765772298767
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 4284,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:28:39.356772",
+    "epoch": 29,
+    "metrics": {
+      "avg_loss": 0.48896025739886917,
+      "avg_f1_score": 0.8165139669382951,
+      "avg_accuracy": 0.5781557296231978,
+      "avg_precision": 0.8168125682269954,
+      "avg_recall": 0.8163410925079949,
+      "avg_specificity": 0.7981156573271142
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006884882431880506,
+      "percentage_kept_lone_threads": 0.10829103214890017,
+      "percentage_total_long_threads": 0.027101931267868605,
+      "percentage_total_lone_threads": 0.42371200186708674
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 4437,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-27T20:29:31.730921",
+    "epoch": 30,
+    "metrics": {
+      "avg_loss": 0.4365115914752108,
+      "avg_f1_score": 0.8464388615676168,
+      "avg_accuracy": 0.5879246389439522,
+      "avg_precision": 0.8467408803245713,
+      "avg_recall": 0.8462640086030644,
+      "avg_specificity": 0.8112846301687503
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.006909193457416808,
+      "percentage_kept_lone_threads": 0.10851663846587704,
+      "percentage_total_long_threads": 0.02710095882684715,
+      "percentage_total_lone_threads": 0.42380146644106037
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600449,
+      "trainable_parameters": 2600449
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "ListNetLoss",
+      "max_messages_per_example": 17,
+      "num_examples": 4590,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T23:58:32.756118",
+    "epoch": 1,
+    "all_metrics": {
+      "avg_loss": 1.8062736189206046,
+      "avg_f1_score": 0.21168930996329252,
+      "avg_accuracy": 0.09447965430886941,
+      "avg_precision": 0.21208498179791785,
+      "avg_recall": 0.2114793616428791,
+      "avg_specificity": 0.7536591910592637
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8062736189206046,
+      "avg_f1_score": 0.422409627678523,
+      "avg_accuracy": 0.1882325644316923,
+      "avg_precision": 0.42271647522374267,
+      "avg_recall": 0.42223197909971166,
+      "avg_specificity": 0.6043662389774308
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8062736189206046,
+      "avg_f1_score": 0.0009689922480620155,
+      "avg_accuracy": 0.0007267441860465116,
+      "avg_precision": 0.0014534883720930232,
+      "avg_recall": 0.0007267441860465116,
+      "avg_specificity": 0.9029521431410967
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.009306260575296108,
+      "percentage_kept_lone_threads": 0.09729272419627749,
+      "percentage_total_long_threads": 0.028764805414551606,
+      "percentage_total_lone_threads": 0.4213197969543147
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 153,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T23:59:27.174283",
+    "epoch": 2,
+    "all_metrics": {
+      "avg_loss": 1.7924800505875644,
+      "avg_f1_score": 0.202323827455474,
+      "avg_accuracy": 0.0949657026622092,
+      "avg_precision": 0.20224483990859538,
+      "avg_recall": 0.2052800143411497,
+      "avg_specificity": 0.7342046094775353
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7924800505875644,
+      "avg_f1_score": 0.39240425594137385,
+      "avg_accuracy": 0.17159772541868612,
+      "avg_precision": 0.3927115501351309,
+      "avg_recall": 0.39222634877656715,
+      "avg_specificity": 0.5789275579668592
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7924800505875644,
+      "avg_f1_score": 0.012243398969574154,
+      "avg_accuracy": 0.018333679905732307,
+      "avg_precision": 0.011778129682059813,
+      "avg_recall": 0.018333679905732307,
+      "avg_specificity": 0.8894816609882111
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.008037225042301184,
+      "percentage_kept_lone_threads": 0.09686971235194586,
+      "percentage_total_long_threads": 0.028341793570219966,
+      "percentage_total_lone_threads": 0.4196277495769882
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 306,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:00:22.270184",
+    "epoch": 3,
+    "all_metrics": {
+      "avg_loss": 1.7890951807275353,
+      "avg_f1_score": 0.23141126641488435,
+      "avg_accuracy": 0.130069824651952,
+      "avg_precision": 0.2335457585909829,
+      "avg_recall": 0.24156876248048464,
+      "avg_specificity": 0.7115240815222725
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7890951807275353,
+      "avg_f1_score": 0.3971263380452961,
+      "avg_accuracy": 0.17395158507676597,
+      "avg_precision": 0.3974318534014627,
+      "avg_recall": 0.3969494607338312,
+      "avg_specificity": 0.5853186189112383
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7890951807275353,
+      "avg_f1_score": 0.06569619478447264,
+      "avg_accuracy": 0.08618806422713804,
+      "avg_precision": 0.06965966378050314,
+      "avg_recall": 0.08618806422713804,
+      "avg_specificity": 0.8377295441333068
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007896221094190638,
+      "percentage_kept_lone_threads": 0.09785673998871969,
+      "percentage_total_long_threads": 0.02763677382966723,
+      "percentage_total_lone_threads": 0.42019176536943037
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 459,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:01:17.555974",
+    "epoch": 4,
+    "all_metrics": {
+      "avg_loss": 1.783949052853978,
+      "avg_f1_score": 0.23728253507665273,
+      "avg_accuracy": 0.13987606750764645,
+      "avg_precision": 0.23616773518089307,
+      "avg_recall": 0.2475757212599318,
+      "avg_specificity": 0.730328388223125
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.783949052853978,
+      "avg_f1_score": 0.39814654288338497,
+      "avg_accuracy": 0.18257337731021941,
+      "avg_precision": 0.3984468431836853,
+      "avg_recall": 0.3979726848147901,
+      "avg_specificity": 0.6070560465297307
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.783949052853978,
+      "avg_f1_score": 0.07641852726992046,
+      "avg_accuracy": 0.09717875770507349,
+      "avg_precision": 0.07388862717810087,
+      "avg_recall": 0.09717875770507349,
+      "avg_specificity": 0.8536007299165194
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007402707275803722,
+      "percentage_kept_lone_threads": 0.1034263959390863,
+      "percentage_total_long_threads": 0.027707275803722505,
+      "percentage_total_lone_threads": 0.4223773265651438
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 612,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:02:09.383273",
+    "epoch": 5,
+    "all_metrics": {
+      "avg_loss": 1.7588402481175454,
+      "avg_f1_score": 0.25191661884560856,
+      "avg_accuracy": 0.15120868841586266,
+      "avg_precision": 0.25335007334458287,
+      "avg_recall": 0.2615787072046223,
+      "avg_specificity": 0.7196278444997333
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7588402481175454,
+      "avg_f1_score": 0.4108668661743332,
+      "avg_accuracy": 0.19004548810551739,
+      "avg_precision": 0.4110295471569264,
+      "avg_recall": 0.41078552568303667,
+      "avg_specificity": 0.6029608467016959
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7588402481175454,
+      "avg_f1_score": 0.09296637151688396,
+      "avg_accuracy": 0.1123718887262079,
+      "avg_precision": 0.09567059953223934,
+      "avg_recall": 0.1123718887262079,
+      "avg_specificity": 0.8362948422977705
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.007445008460236886,
+      "percentage_kept_lone_threads": 0.10186125211505923,
+      "percentage_total_long_threads": 0.027918781725888325,
+      "percentage_total_lone_threads": 0.4230118443316413
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 765,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:04:38.838587",
+    "epoch": 1,
+    "all_metrics": {
+      "avg_loss": 1.8134472932323578,
+      "avg_f1_score": 0.2174739904234073,
+      "avg_accuracy": 0.1339302818828681,
+      "avg_precision": 0.2160840446670188,
+      "avg_recall": 0.23131973988655022,
+      "avg_specificity": 0.7292329068999328
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8134472932323578,
+      "avg_f1_score": 0.389487910716359,
+      "avg_accuracy": 0.19453338806787082,
+      "avg_precision": 0.3897912312783003,
+      "avg_recall": 0.3893123040752351,
+      "avg_specificity": 0.6103817299399196
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8134472932323578,
+      "avg_f1_score": 0.04546007013045553,
+      "avg_accuracy": 0.07332717569786536,
+      "avg_precision": 0.04237685805573736,
+      "avg_recall": 0.07332717569786536,
+      "avg_specificity": 0.8480840838599459
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.12859560067681894,
+      "percentage_total_long_threads": 0.030456852791878174,
+      "percentage_total_lone_threads": 0.428087986463621
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 153,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:05:32.845285",
+    "epoch": 2,
+    "all_metrics": {
+      "avg_loss": 1.8082048923769705,
+      "avg_f1_score": 0.21717733372893258,
+      "avg_accuracy": 0.10989395879475822,
+      "avg_precision": 0.22229898654317257,
+      "avg_recall": 0.2182248408084164,
+      "avg_specificity": 0.7549310105269408
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8082048923769705,
+      "avg_f1_score": 0.4138513981173865,
+      "avg_accuracy": 0.19701198551125879,
+      "avg_precision": 0.4141582456626061,
+      "avg_recall": 0.41367374953857516,
+      "avg_specificity": 0.6125229946087505
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8082048923769705,
+      "avg_f1_score": 0.020503269340478643,
+      "avg_accuracy": 0.02277593207825766,
+      "avg_precision": 0.03043972742373905,
+      "avg_recall": 0.02277593207825766,
+      "avg_specificity": 0.8973390264451311
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.12309644670050761,
+      "percentage_total_long_threads": 0.02918781725888325,
+      "percentage_total_lone_threads": 0.42681895093062605
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 306,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:06:26.054789",
+    "epoch": 3,
+    "all_metrics": {
+      "avg_loss": 1.7908390151405515,
+      "avg_f1_score": 0.22066628340213246,
+      "avg_accuracy": 0.11238725896744764,
+      "avg_precision": 0.2309125099219439,
+      "avg_recall": 0.21988692649070007,
+      "avg_specificity": 0.7305084318600283
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7908390151405515,
+      "avg_f1_score": 0.39152011510502077,
+      "avg_accuracy": 0.17634338931508745,
+      "avg_precision": 0.3918265172982154,
+      "avg_recall": 0.3913427243615923,
+      "avg_specificity": 0.5985950652314949
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7908390151405515,
+      "avg_f1_score": 0.049812451699244156,
+      "avg_accuracy": 0.04843112861980787,
+      "avg_precision": 0.06999850254567236,
+      "avg_recall": 0.04843112861980787,
+      "avg_specificity": 0.8624217984885619
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11844331641285956,
+      "percentage_total_long_threads": 0.029328821206993795,
+      "percentage_total_lone_threads": 0.42554991539763115
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 459,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:07:15.683303",
+    "epoch": 4,
+    "all_metrics": {
+      "avg_loss": 1.7806815497697022,
+      "avg_f1_score": 0.20126627639552308,
+      "avg_accuracy": 0.09392408736020257,
+      "avg_precision": 0.20216074545838209,
+      "avg_recall": 0.200929824729677,
+      "avg_specificity": 0.7463475142943385
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7806815497697022,
+      "avg_f1_score": 0.400316895479377,
+      "avg_accuracy": 0.18612488570021807,
+      "avg_precision": 0.400628728730649,
+      "avg_recall": 0.40013636043916695,
+      "avg_specificity": 0.5914935753562046
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7806815497697022,
+      "avg_f1_score": 0.0022156573116691287,
+      "avg_accuracy": 0.0017232890201870996,
+      "avg_precision": 0.003692762186115214,
+      "avg_recall": 0.0017232890201870996,
+      "avg_specificity": 0.9012014532324724
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11188663282571912,
+      "percentage_total_long_threads": 0.028553299492385786,
+      "percentage_total_lone_threads": 0.42385786802030456
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 612,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:08:06.404270",
+    "epoch": 5,
+    "all_metrics": {
+      "avg_loss": 1.8027536496472738,
+      "avg_f1_score": 0.21145042558086036,
+      "avg_accuracy": 0.10832298136645964,
+      "avg_precision": 0.21385668276972625,
+      "avg_recall": 0.2113100989187946,
+      "avg_specificity": 0.7607363831820353
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8027536496472738,
+      "avg_f1_score": 0.4149677938808374,
+      "avg_accuracy": 0.20881642512077295,
+      "avg_precision": 0.41527375201288247,
+      "avg_recall": 0.41479066022544286,
+      "avg_specificity": 0.6167732629689151
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8027536496472738,
+      "avg_f1_score": 0.007933057280883367,
+      "avg_accuracy": 0.007829537612146309,
+      "avg_precision": 0.012439613526570048,
+      "avg_recall": 0.007829537612146309,
+      "avg_specificity": 0.9046995033951556
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11336717428087986,
+      "percentage_total_long_threads": 0.02859560067681895,
+      "percentage_total_lone_threads": 0.42470389170896783
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 765,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:08:56.116172",
+    "epoch": 6,
+    "all_metrics": {
+      "avg_loss": 1.8036209796751435,
+      "avg_f1_score": 0.21773182957393483,
+      "avg_accuracy": 0.10651542049568365,
+      "avg_precision": 0.21782523438225193,
+      "avg_recall": 0.21806889909960084,
+      "avg_specificity": 0.7603199351006368
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8036209796751435,
+      "avg_f1_score": 0.43022486772486773,
+      "avg_accuracy": 0.20693922305764412,
+      "avg_precision": 0.43053350970017634,
+      "avg_recall": 0.43004618026547853,
+      "avg_specificity": 0.6174663380803732
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8036209796751435,
+      "avg_f1_score": 0.005238791423001949,
+      "avg_accuracy": 0.006091617933723197,
+      "avg_precision": 0.005116959064327485,
+      "avg_recall": 0.006091617933723197,
+      "avg_specificity": 0.9031735321209006
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11209813874788493,
+      "percentage_total_long_threads": 0.028341793570219966,
+      "percentage_total_lone_threads": 0.42470389170896783
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 918,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:09:45.991896",
+    "epoch": 7,
+    "all_metrics": {
+      "avg_loss": 1.8052646395211014,
+      "avg_f1_score": 0.2068764008965738,
+      "avg_accuracy": 0.09735773752344358,
+      "avg_precision": 0.20702849823887287,
+      "avg_recall": 0.20678834454050593,
+      "avg_specificity": 0.761658560379742
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.8052646395211014,
+      "avg_f1_score": 0.4137528017931476,
+      "avg_accuracy": 0.19471547504688716,
+      "avg_precision": 0.41405699647774574,
+      "avg_recall": 0.41357668908101186,
+      "avg_specificity": 0.6140952187421929
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.8052646395211014,
+      "avg_f1_score": 0.0,
+      "avg_accuracy": 0.0,
+      "avg_precision": 0.0,
+      "avg_recall": 0.0,
+      "avg_specificity": 0.909221902017291
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11252115059221658,
+      "percentage_total_long_threads": 0.02852308436064781,
+      "percentage_total_lone_threads": 0.42434131012811216
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1071,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:10:33.643086",
+    "epoch": 8,
+    "all_metrics": {
+      "avg_loss": 1.7767175261179606,
+      "avg_f1_score": 0.22024805625551894,
+      "avg_accuracy": 0.10194355602937692,
+      "avg_precision": 0.22520659688570135,
+      "avg_recall": 0.2190297430595938,
+      "avg_specificity": 0.7548643251441759
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7767175261179606,
+      "avg_f1_score": 0.42474984385432146,
+      "avg_accuracy": 0.19039504856669034,
+      "avg_precision": 0.42506493506493503,
+      "avg_recall": 0.4245674226271241,
+      "avg_specificity": 0.6104427868980108
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7767175261179606,
+      "avg_f1_score": 0.015746268656716418,
+      "avg_accuracy": 0.013492063492063493,
+      "avg_precision": 0.025348258706467664,
+      "avg_recall": 0.013492063492063493,
+      "avg_specificity": 0.8992858633903409
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11019458544839256,
+      "percentage_total_long_threads": 0.028447546531302877,
+      "percentage_total_lone_threads": 0.4241751269035533
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1224,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:11:31.448198",
+    "epoch": 9,
+    "all_metrics": {
+      "avg_loss": 1.7806098795873282,
+      "avg_f1_score": 0.24377836098017847,
+      "avg_accuracy": 0.13633495800761988,
+      "avg_precision": 0.2503222097646558,
+      "avg_recall": 0.24814081202570412,
+      "avg_specificity": 0.7362564004740263
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7806098795873282,
+      "avg_f1_score": 0.42430948747495506,
+      "avg_accuracy": 0.20052192012623668,
+      "avg_precision": 0.42461324446935955,
+      "avg_recall": 0.42413362816240513,
+      "avg_specificity": 0.6049051967217435
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7806098795873282,
+      "avg_f1_score": 0.06324723448540186,
+      "avg_accuracy": 0.07214799588900309,
+      "avg_precision": 0.07603117505995204,
+      "avg_recall": 0.07214799588900309,
+      "avg_specificity": 0.8676076042263092
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11120511374318481,
+      "percentage_total_long_threads": 0.02820078962210942,
+      "percentage_total_lone_threads": 0.4246098890768942
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1377,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:12:24.880965",
+    "epoch": 10,
+    "all_metrics": {
+      "avg_loss": 1.7687681996933884,
+      "avg_f1_score": 0.2753543257193594,
+      "avg_accuracy": 0.17288587848932677,
+      "avg_precision": 0.2781895626723213,
+      "avg_recall": 0.2841197146962233,
+      "avg_specificity": 0.7340455980003394
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7687681996933884,
+      "avg_f1_score": 0.45617930122240463,
+      "avg_accuracy": 0.23353602216748767,
+      "avg_precision": 0.4564826217843459,
+      "avg_recall": 0.4560036945812808,
+      "avg_specificity": 0.6269011839054943
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7687681996933884,
+      "avg_f1_score": 0.0945293502163142,
+      "avg_accuracy": 0.11223573481116585,
+      "avg_precision": 0.09989650356029665,
+      "avg_recall": 0.11223573481116585,
+      "avg_specificity": 0.8411900120951845
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11150592216582064,
+      "percentage_total_long_threads": 0.02825719120135364,
+      "percentage_total_lone_threads": 0.4242808798646362
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1530,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:13:17.944765",
+    "epoch": 11,
+    "all_metrics": {
+      "avg_loss": 1.7706615049142536,
+      "avg_f1_score": 0.2976179042538529,
+      "avg_accuracy": 0.20038381884099307,
+      "avg_precision": 0.29997110015411627,
+      "avg_recall": 0.31205563795241686,
+      "avg_specificity": 0.7236903673031052
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7706615049142536,
+      "avg_f1_score": 0.4625546935576218,
+      "avg_accuracy": 0.2390321062539218,
+      "avg_precision": 0.46286378742454876,
+      "avg_recall": 0.4623757444767694,
+      "avg_specificity": 0.6316123399944776
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7706615049142536,
+      "avg_f1_score": 0.13268111495008403,
+      "avg_accuracy": 0.16173553142806438,
+      "avg_precision": 0.13707841288368375,
+      "avg_recall": 0.16173553142806438,
+      "avg_specificity": 0.8157683946117328
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11152130441470542,
+      "percentage_total_long_threads": 0.02814951545916013,
+      "percentage_total_lone_threads": 0.42439624673127213
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1683,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:14:10.743287",
+    "epoch": 12,
+    "all_metrics": {
+      "avg_loss": 1.763563387961364,
+      "avg_f1_score": 0.2928673366236385,
+      "avg_accuracy": 0.18746079363009063,
+      "avg_precision": 0.29998659677641026,
+      "avg_recall": 0.30346095200829776,
+      "avg_specificity": 0.7482767411928101
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.763563387961364,
+      "avg_f1_score": 0.47386578430337395,
+      "avg_accuracy": 0.24169011285223624,
+      "avg_precision": 0.4741686696851689,
+      "avg_recall": 0.47369042960865054,
+      "avg_specificity": 0.6510448661811645
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.763563387961364,
+      "avg_f1_score": 0.11186888894390305,
+      "avg_accuracy": 0.133231474407945,
+      "avg_precision": 0.12580452386765156,
+      "avg_recall": 0.133231474407945,
+      "avg_specificity": 0.8455086162044555
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11209813874788493,
+      "percentage_total_long_threads": 0.028341793570219966,
+      "percentage_total_lone_threads": 0.423716864072194
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1836,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:15:01.088194",
+    "epoch": 13,
+    "all_metrics": {
+      "avg_loss": 1.7059269719404684,
+      "avg_f1_score": 0.32145602242936233,
+      "avg_accuracy": 0.2153819745925009,
+      "avg_precision": 0.3262537101352891,
+      "avg_recall": 0.3316834905650695,
+      "avg_specificity": 0.7384784332152754
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.7059269719404684,
+      "avg_f1_score": 0.48666368008473276,
+      "avg_accuracy": 0.2538867900710006,
+      "avg_precision": 0.486963980385033,
+      "avg_recall": 0.4864898220161378,
+      "avg_specificity": 0.6542309515993727
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.7059269719404684,
+      "avg_f1_score": 0.15624836477399198,
+      "avg_accuracy": 0.17687715911400123,
+      "avg_precision": 0.16554343988554515,
+      "avg_recall": 0.17687715911400123,
+      "avg_specificity": 0.822725914831178
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11330209553559807,
+      "percentage_total_long_threads": 0.02817909670701549,
+      "percentage_total_lone_threads": 0.4241832617467135
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 1989,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:15:51.598733",
+    "epoch": 14,
+    "all_metrics": {
+      "avg_loss": 1.6727464376983785,
+      "avg_f1_score": 0.339109106407868,
+      "avg_accuracy": 0.22533822983384386,
+      "avg_precision": 0.34604288864157284,
+      "avg_recall": 0.3494244871437854,
+      "avg_specificity": 0.72612173198796
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.6727464376983785,
+      "avg_f1_score": 0.5041318574213312,
+      "avg_accuracy": 0.25578065534205885,
+      "avg_precision": 0.5044404993966398,
+      "avg_recall": 0.5039531699619418,
+      "avg_specificity": 0.6404045779594025
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.6727464376983785,
+      "avg_f1_score": 0.17408635539440492,
+      "avg_accuracy": 0.1948958043256289,
+      "avg_precision": 0.18764527788650598,
+      "avg_recall": 0.1948958043256289,
+      "avg_specificity": 0.8118388860165175
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11252115059221658,
+      "percentage_total_long_threads": 0.028281363306744016,
+      "percentage_total_lone_threads": 0.42385786802030456
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2142,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
+  },
+  {
+    "timestamp": "2025-12-01T00:16:43.115831",
+    "epoch": 15,
+    "all_metrics": {
+      "avg_loss": 1.6406067736264371,
+      "avg_f1_score": 0.39427069296004486,
+      "avg_accuracy": 0.2940845919982084,
+      "avg_precision": 0.4040677508192149,
+      "avg_recall": 0.4161548553935084,
+      "avg_specificity": 0.7154246518082535
+    },
+    "rank_head_metrics": {
+      "avg_loss": 1.6406067736264371,
+      "avg_f1_score": 0.5394303313410195,
+      "avg_accuracy": 0.29511085546956706,
+      "avg_precision": 0.5397394252079464,
+      "avg_recall": 0.539251382260167,
+      "avg_specificity": 0.6582502620203938
+    },
+    "keep_head_metrics": {
+      "avg_loss": 1.6406067736264371,
+      "avg_f1_score": 0.2491110545790703,
+      "avg_accuracy": 0.29305832852684977,
+      "avg_precision": 0.26839607643048347,
+      "avg_recall": 0.29305832852684977,
+      "avg_specificity": 0.7725990415961134
+    },
+    "thread_metrics": {
+      "percentage_kept_long_threads": 0.0,
+      "percentage_kept_lone_threads": 0.11178793006204174,
+      "percentage_total_long_threads": 0.02825719120135364,
+      "percentage_total_lone_threads": 0.42351945854483924
+    },
+    "model_config": {
+      "architecture": "CDModel (Multi-head + Self-Attention)",
+      "input_dim": 768,
+      "attention": {
+        "num_heads": 4,
+        "embed_dim": 768
+      },
+      "hidden_dim1": 256,
+      "hidden_dim2": 128,
+      "hidden_dim3": 64,
+      "output_heads": {
+        "thread_prediction": 1,
+        "keep_discard_prediction": 1
+      },
+      "dropout_rate": 0.2,
+      "activation": "ReLU",
+      "total_parameters": 2600514,
+      "trainable_parameters": 2600514
+    },
+    "training_config": {
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "rank_loss_function": "ListNetLoss",
+      "keep_loss_function": "BCELoss",
+      "max_messages_per_example": 17,
+      "num_examples": 2295,
+      "batch_size": 5,
+      "f1_threshold": 0.5,
+      "using_attention": "TRUE"
+    }
   }
 ]

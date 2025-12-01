@@ -37,7 +37,7 @@ class CDModel(nn.Module):
 
         # Two output heads (multi-head architecture)
         self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
-        # self.output_layer_keep = nn.Linear(hidden_dim3, 1)    # Keep/discard prediction, might use later, likely not 
+        self.output_layer_keep = nn.Linear(hidden_dim3, 1)    # Keep/discard prediction, might use later, likely not 
 
         # Dropout for regularization
         self.dropout = nn.Dropout(p=dropout_rate)
@@ -67,9 +67,9 @@ class CDModel(nn.Module):
 
         # Two output heads
         thread_logits = self.output_layer_thread(x).squeeze(-1)  # Shape: [B, N]
-        # keep_logits = self.output_layer_keep(x).squeeze(-1)      # Shape: [B, N]
+        keep_logits = self.output_layer_keep(x).squeeze(-1)      # Shape: [B, N]
 
-        return thread_logits
+        return thread_logits, keep_logits
 
     def get_model_config(self):
         """

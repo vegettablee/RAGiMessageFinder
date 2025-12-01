@@ -1,5 +1,7 @@
 import torch
 import os
+import random
+import numpy as np
 from datetime import datetime
 
 
@@ -22,7 +24,11 @@ def save_checkpoint(model, optimizer, epoch, loss, filepath='checkpoints/checkpo
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss,
-        'timestamp': datetime.now().isoformat()
+        'timestamp': datetime.now().isoformat(),
+        # Save random states for reproducibility
+        'random_state': random.getstate(),
+        'numpy_random_state': np.random.get_state(),
+        'torch_random_state': torch.get_rng_state(),
     }
 
     torch.save(checkpoint, filepath)
@@ -45,11 +51,19 @@ def load_checkpoint(model, optimizer, filepath='checkpoints/checkpoint.pt'):
         print(f"Checkpoint file {filepath} not found")
         return 0, None
 
-    checkpoint = torch.load(filepath)
+    checkpoint = torch.load(filepath, weights_only=False)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epoch = checkpoint['epoch']
     loss = checkpoint['loss']
+
+    # Restore random states for reproducibility
+    if 'random_state' in checkpoint:
+        random.setstate(checkpoint['random_state'])
+    if 'numpy_random_state' in checkpoint:
+        np.random.set_state(checkpoint['numpy_random_state'])
+    if 'torch_random_state' in checkpoint:
+        torch.set_rng_state(checkpoint['torch_random_state'])
 
     print(f"Checkpoint loaded from {filepath} (Epoch: {epoch}, Loss: {loss:.4f})")
     return epoch, loss
@@ -85,7 +99,7 @@ def load_model(model, filepath='saved_models/model.pt'):
         print(f"Model file {filepath} not found")
         return model
 
-    model.load_state_dict(torch.load(filepath))
+    model.load_state_dict(torch.load(filepath, weights_only=False))
     print(f"Model loaded from {filepath}")
     return model
 
@@ -117,7 +131,7 @@ def load_training_history(filepath='training_history.pt'):
         print(f"History file {filepath} not found")
         return {}
 
-    history = torch.load(filepath)
+    history = torch.load(filepath, weights_only=False)
     print(f"Training history loaded from {filepath}")
     return history
 

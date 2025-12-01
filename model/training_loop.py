@@ -8,25 +8,30 @@ from dataset_utils import load_dataset, get_dataloader, get_example
 from construct_tree import build_message_tree, remove_used_nodes
 from CD_model import CDModel
 from loss_function import compute_loss_f1, ListNetLoss
+from save import save_model, save_checkpoint
 import debug_display as dbg
+import numpy as np
 import random
 
-EPOCHS = 25 # each epoch is roughly 153 examples
+EPOCHS = 15 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
+SAVE_LAST_CHECKPOINT = True # saves a checkpoint after all epochs are finished 
+SAVE_MODEL = False
 MAX_MESSAGES_PER_EXAMPLE = 17 # limit conversation length for faster training
 NUM_EXAMPLES = 5000 # number of examples to load, but not necessarily use 
 TEACHER_FORCE = True # when false, let the model choose freely
 PRUNE_SELF_NODES_PROB = 0.75 # only keep 25 percent of nodes who do not have any connections 
-PRUNE_LONG_NODES_PROB = 0.25 # only keep 25 percent of nodes that exceed length of 8
+PRUNE_LONG_NODES_PROB = 1.1 # cut all examples with thread length > 8 
 PRUNE_LONG_NODE_LEN = 8 # minimum node length to prune 
 INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
-
+SIGMOID_THRESHOLD = 0.50 # 0.75 because I want the model to be confident about it's choices
 
 model = SentenceTransformer("all-mpnet-base-v2")
-# loss_fn = nn.BCEWithLogitsLoss() # binary cross entropy 
-loss_fn = ListNetLoss() 
+
+loss_fn = ListNetLoss() # ListNetLoss for first output head for ranking nodes 
+keep_loss_fn = nn.BCEWithLogitsLoss() # BCEloss for second output head for keeping/discarding nodes
 
 # all nodes are a direct reference to a real message
 def training_loop():
@@ -35,7 +40,8 @@ def training_loop():
     cd_model = CDModel()
     optimizer = optim.Adam(cd_model.parameters(), lr=0.001) # adam optimizer
   
-  dataset = load_dataset(split='train', num_examples=NUM_EXAMPLES)
+  train_dataset = load_dataset(split='train', num_examples=NUM_EXAMPLES)
+  dev_dataset = load_dataset(split='dev', num_examples=NUM_EXAMPLES)
   # use these metrics keep track of class imbalances with the dataset
   total_threads = 0 
   num_long_threads = 0
@@ -57,7 +63,21 @@ def training_loop():
     epoch_recall_scores = []
     epoch_specificity_scores = []
 
-    dataloader = get_dataloader(dataset, batch_size=1, shuffle=True)
+    # Rank head epoch metrics
+    epoch_rank_f1_scores = []
+    epoch_rank_accuracies = []
+    epoch_rank_precision_scores = []
+    epoch_rank_recall_scores = []
+    epoch_rank_specificity_scores = []
+
+    # Keep head epoch metrics
+    epoch_keep_f1_scores = []
+    epoch_keep_accuracies = []
+    epoch_keep_precision_scores = []
+    epoch_keep_recall_scores = []
+    epoch_keep_specificity_scores = []
+
+    dataloader = get_dataloader(train_dataset, batch_size=1, shuffle=True)
     for batch_idx, batch in enumerate(dataloader):
       for ex_idx, example in enumerate(batch):
         # get training example(might add pre-processing)
@@ -123,6 +143,21 @@ def training_loop():
         example_precision_scores = []
         example_recall_scores = []
         example_specificity_scores = []
+
+        # Rank head metrics
+        example_rank_f1_scores = []
+        example_rank_accuracies = []
+        example_rank_precision_scores = []
+        example_rank_recall_scores = []
+        example_rank_specificity_scores = []
+
+        # Keep head metrics
+        example_keep_f1_scores = []
+        example_keep_accuracies = []
+        example_keep_precision_scores = []
+        example_keep_recall_scores = []
+        example_keep_specificity_scores = []
+
         optimizer.zero_grad()
 
         num_threads_skipped = 0 
@@ -151,8 +186,30 @@ def training_loop():
           # Debug: Show embedding info for first thread
           if dbg.should_show_debug_for_example(batch_idx) and thread_idx == 0:
             dbg.display_embedding_info(current_messages, messages_emb, input_tensor)
-          thread_logits = cd_model(input_tensor) # shape [B, N]
 
+          thread_logits, keep_logits = cd_model(input_tensor) # shape [B, N]
+          # print("Shape of keep logits " + str(keep_logits.shape))
+
+          keep_node_logits = keep_logits[0]
+
+          keep_node_probs = torch.sigmoid(keep_node_logits)
+          top_keep_indices = [] 
+          pred_keep_ids = []
+          pred_kept_messages = [] 
+          has_kept_pred = False
+          for idx, i in enumerate(keep_node_probs): # get all messages above sigmoid threshold 
+            if i >= SIGMOID_THRESHOLD: 
+              top_keep_indices.append(idx)
+              has_kept_pred = True
+          
+          if has_kept_pred is True: # there was a sigmoid value above threshold
+            for idx in top_keep_indices:
+              pred_kept_id = remaining_nodes[idx]
+              pred_keep_ids.append(pred_kept_id)
+              pred_kept_messages.append(messages[pred_kept_id - 1])
+
+          # print("Kept ids " + str(pred_keep_ids))
+              
           node_logits = thread_logits[0]
           # print(str(node_logits))
           thread_probs = torch.softmax(node_logits, dim=-1) # use softmax because of ListNet loss instead of BCE
@@ -167,23 +224,34 @@ def training_loop():
             predicted.append(messages[pred_id - 1])
             pred_ids.append(pred_id) # ids that were predicted
 
-          f1_score, precision, recall, specificity = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
+          rank_f1_score, rank_precision, rank_recall, rank_specificity = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
+          keep_f1_score, keep_precision, keep_recall, keep_specificy = compute_loss_f1(pred_keep_ids, remaining_nodes, list(correct_thread))
+          
+
           used_nodes = list(correct_thread)
 
           correct_nodes = set(correct_thread)
           set_pred_ids = set(pred_ids) # turn into set
-          true_labels = []
+          true_labels = [] # truth labels for ListNetLoss
+          kept_truth_labels = [] # truth labels for second output head
           rank_range = len(correct_thread) # first used nodes get higher rank for model to learn importance 
           for i, node_id in enumerate(remaining_nodes): # create truth labels for listnet loss function
           # Map logit position to node ID
             if node_id in correct_nodes:
               true_labels.append(rank_range)
+              kept_truth_labels.append(1)
               rank_range += -1 # decrement 
             else:
               true_labels.append(0)
+              kept_truth_labels.append(0) 
+
+          #print("Rank truth labels : " + str(true_labels))
+          #print("Kept truth labels : " + str(kept_truth_labels))
 
           loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
-          total_loss += loss
+          keep_loss = keep_loss_fn(keep_node_logits, torch.tensor(kept_truth_labels, dtype=torch.float32))
+
+          total_loss += loss + keep_loss # add both losses as one representation 
 
           # calculate accuracy: intersection of predicted and ground truth
           # accuracy is determined by whether the model predicted correct nodes as well as had the correct order 
@@ -196,13 +264,44 @@ def training_loop():
             accuracy = 0
           else: 
             accuracy = total_correct / len(correct_thread)
-        
-          # track metrics
-          example_f1_scores.append(f1_score)
-          example_accuracies.append(accuracy)
-          example_precision_scores.append(precision)
-          example_recall_scores.append(recall)
-          example_specificity_scores.append(specificity)
+          
+          kept_correct = 0 # calculate the accuracy for the kept nodes
+          if has_kept_pred is True: 
+            kept_correct = 0 
+            for idx, pred in enumerate(pred_keep_ids): 
+              if pred in correct_nodes: 
+                kept_correct += 1
+            kept_accuracy = kept_correct / len(correct_thread)
+          else: 
+            kept_accuracy = 0 
+
+          general_accuracy = (accuracy + kept_accuracy) / 2
+          general_f1 = (rank_f1_score + keep_f1_score) / 2
+          general_precision = (rank_precision + keep_precision) / 2
+          general_recall = (rank_recall + keep_recall) / 2
+          general_specificity = (rank_specificity + keep_specificy) / 2 
+
+
+          # track general metrics (combined from both heads)
+          example_f1_scores.append(general_f1)
+          example_accuracies.append(general_accuracy)
+          example_precision_scores.append(general_precision)
+          example_recall_scores.append(general_recall)
+          example_specificity_scores.append(general_specificity)
+
+          # track rank head metrics
+          example_rank_f1_scores.append(rank_f1_score)
+          example_rank_accuracies.append(accuracy)
+          example_rank_precision_scores.append(rank_precision)
+          example_rank_recall_scores.append(rank_recall)
+          example_rank_specificity_scores.append(rank_specificity)
+
+          # track keep head metrics
+          example_keep_f1_scores.append(keep_f1_score)
+          example_keep_accuracies.append(kept_accuracy)
+          example_keep_precision_scores.append(keep_precision)
+          example_keep_recall_scores.append(keep_recall)
+          example_keep_specificity_scores.append(keep_specificy)
           
           # remove used nodes from ids 
           # remove used messages from messages for next iteration 
@@ -233,12 +332,21 @@ def training_loop():
           total_loss.backward()
           optimizer.step()
 
-          # example-level metrics
-          avg_f1 = sum(example_f1_scores) / len(example_f1_scores) if example_f1_scores else 0.0
-          avg_accuracy = sum(example_accuracies) / len(example_accuracies) if example_accuracies else 0.0 
-          average_loss = total_loss.item() / (len(correct_threads) - num_threads_skipped)
+          # general metrics for both output heads
+          num_valid_threads = len(correct_threads) - num_threads_skipped
+          avg_f1 = sum(example_f1_scores) / num_valid_threads if num_valid_threads > 0 else 0.0
+          avg_accuracy = sum(example_accuracies) / num_valid_threads if num_valid_threads > 0 else 0.0
+          average_loss = total_loss.item() / num_valid_threads if num_valid_threads > 0 else 0.0
 
-          # epoch metrics
+          # rank head metrics
+          rank_avg_f1 = sum(example_rank_f1_scores) / num_valid_threads if num_valid_threads > 0 else 0.0
+          rank_avg_accuracy = sum(example_rank_accuracies) / num_valid_threads if num_valid_threads > 0 else 0.0
+
+          # keep head metrics
+          keep_avg_f1 = sum(example_keep_f1_scores) / num_valid_threads if num_valid_threads > 0 else 0.0
+          keep_avg_accuracy = sum(example_keep_accuracies) / num_valid_threads if num_valid_threads > 0 else 0.0
+
+          # accumulate general metrics to epoch
           epoch_f1_scores.extend(example_f1_scores)
           epoch_accuracies.extend(example_accuracies)
           epoch_precision_scores.extend(example_precision_scores)
@@ -246,16 +354,44 @@ def training_loop():
           epoch_specificity_scores.extend(example_specificity_scores)
           epoch_losses.append(average_loss)
 
-          # Print example summary
-          print(f"Example average {batch_idx + 1}/{len(dataset)} | Loss: {average_loss} | Avg F1: {avg_f1:.4f} | Avg Accuracy: {avg_accuracy:.4f}")
+          # accumulate rank head metrics to epoch
+          epoch_rank_f1_scores.extend(example_rank_f1_scores)
+          epoch_rank_accuracies.extend(example_rank_accuracies)
+          epoch_rank_precision_scores.extend(example_rank_precision_scores)
+          epoch_rank_recall_scores.extend(example_rank_recall_scores)
+          epoch_rank_specificity_scores.extend(example_rank_specificity_scores)
 
-    # Print epoch summary
+          # accumulate keep head metrics to epoch
+          epoch_keep_f1_scores.extend(example_keep_f1_scores)
+          epoch_keep_accuracies.extend(example_keep_accuracies)
+          epoch_keep_precision_scores.extend(example_keep_precision_scores)
+          epoch_keep_recall_scores.extend(example_keep_recall_scores)
+          epoch_keep_specificity_scores.extend(example_keep_specificity_scores)
+
+          # Print example summary
+          print(f"Example general average {batch_idx + 1}/{len(train_dataset)} | Loss: {average_loss} | Avg F1: {avg_f1:.4f} | Avg Accuracy: {avg_accuracy:.4f}")
+
+    # Print epoch summary - general metrics
     epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0.0
     epoch_avg_f1 = sum(epoch_f1_scores) / len(epoch_f1_scores) if epoch_f1_scores else 0.0
     epoch_avg_accuracy = sum(epoch_accuracies) / len(epoch_accuracies) if epoch_accuracies else 0.0
     epoch_avg_precision = sum(epoch_precision_scores) / len(epoch_precision_scores) if epoch_precision_scores else 0.0
     epoch_avg_recall = sum(epoch_recall_scores) / len(epoch_recall_scores) if epoch_recall_scores else 0.0
     epoch_avg_specificity = sum(epoch_specificity_scores) / len(epoch_specificity_scores) if epoch_specificity_scores else 0.0
+
+    # Rank head epoch averages
+    epoch_rank_avg_f1 = sum(epoch_rank_f1_scores) / len(epoch_rank_f1_scores) if epoch_rank_f1_scores else 0.0
+    epoch_rank_avg_accuracy = sum(epoch_rank_accuracies) / len(epoch_rank_accuracies) if epoch_rank_accuracies else 0.0
+    epoch_rank_avg_precision = sum(epoch_rank_precision_scores) / len(epoch_rank_precision_scores) if epoch_rank_precision_scores else 0.0
+    epoch_rank_avg_recall = sum(epoch_rank_recall_scores) / len(epoch_rank_recall_scores) if epoch_rank_recall_scores else 0.0
+    epoch_rank_avg_specificity = sum(epoch_rank_specificity_scores) / len(epoch_rank_specificity_scores) if epoch_rank_specificity_scores else 0.0
+
+    # Keep head epoch averages
+    epoch_keep_avg_f1 = sum(epoch_keep_f1_scores) / len(epoch_keep_f1_scores) if epoch_keep_f1_scores else 0.0
+    epoch_keep_avg_accuracy = sum(epoch_keep_accuracies) / len(epoch_keep_accuracies) if epoch_keep_accuracies else 0.0
+    epoch_keep_avg_precision = sum(epoch_keep_precision_scores) / len(epoch_keep_precision_scores) if epoch_keep_precision_scores else 0.0
+    epoch_keep_avg_recall = sum(epoch_keep_recall_scores) / len(epoch_keep_recall_scores) if epoch_keep_recall_scores else 0.0
+    epoch_keep_avg_specificity = sum(epoch_keep_specificity_scores) / len(epoch_keep_specificity_scores) if epoch_keep_specificity_scores else 0.0
 
     thread_metrics = {
     "percentage_long_pruned" : (num_long_threads - num_long_pruned) / total_threads, # percentage kept relative to pruned for long threads
@@ -275,12 +411,37 @@ def training_loop():
     print(f"{'='*80}\n")
 
     # Save epoch data
-    save_data(cd_model, optimizer, epoch + 1, epoch_avg_loss, epoch_avg_f1, epoch_avg_accuracy, epoch_avg_precision, epoch_avg_recall, epoch_avg_specificity, thread_metrics, total_examples)
+    rank_head_metrics = {
+      'avg_f1_score': epoch_rank_avg_f1,
+      'avg_accuracy': epoch_rank_avg_accuracy,
+      'avg_precision': epoch_rank_avg_precision,
+      'avg_recall': epoch_rank_avg_recall,
+      'avg_specificity': epoch_rank_avg_specificity,
+    }
+    keep_head_metrics = {
+      'avg_f1_score': epoch_keep_avg_f1,
+      'avg_accuracy': epoch_keep_avg_accuracy,
+      'avg_precision': epoch_keep_avg_precision,
+      'avg_recall': epoch_keep_avg_recall,
+      'avg_specificity': epoch_keep_avg_specificity,
+    }
+    save_data(cd_model, optimizer, epoch + 1, epoch_avg_loss, epoch_avg_f1, epoch_avg_accuracy, epoch_avg_precision, epoch_avg_recall, epoch_avg_specificity, rank_head_metrics, keep_head_metrics, thread_metrics, total_examples)
+
+  # Save checkpoint after all epochs complete
+  if SAVE_LAST_CHECKPOINT:
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    checkpoint_filepath = f"checkpoints/checkpoint_{timestamp}_epoch{EPOCHS}_f1{epoch_avg_f1:.3f}.pt"
+    save_checkpoint(cd_model, optimizer, EPOCHS, epoch_avg_loss, filepath=checkpoint_filepath)
+    print(f"\n{'='*80}")
+    print(f"TRAINING COMPLETE - Checkpoint saved to {checkpoint_filepath}")
+    print(f"Final F1: {epoch_avg_f1:.4f} | Final Loss: {epoch_avg_loss:.4f}")
+    print(f"{'='*80}\n")
 
 def remove_messages(ids, messages): 
   return messages
 
-def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, avg_precision, avg_recall, avg_specificity, thread_metrics, total_examples):
+def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, avg_precision, avg_recall, avg_specificity, rank_head_metrics, keep_head_metrics, thread_metrics, total_examples):
 
   import json
   from datetime import datetime
@@ -295,7 +456,7 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, av
   run_data = {
     'timestamp': datetime.now().isoformat(),
     'epoch': epoch_num,
-    'metrics': {
+    'all_metrics': {
       'avg_loss': avg_loss,
       'avg_f1_score': avg_f1,
       'avg_accuracy': avg_accuracy,
@@ -303,6 +464,22 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, av
       'avg_recall': avg_recall,
       'avg_specificity': avg_specificity,
     },
+    "rank_head_metrics" : {
+      'avg_loss': avg_loss,  # Same loss for both heads
+      'avg_f1_score': rank_head_metrics['avg_f1_score'],
+      'avg_accuracy': rank_head_metrics['avg_accuracy'],
+      'avg_precision': rank_head_metrics['avg_precision'],
+      'avg_recall': rank_head_metrics['avg_recall'],
+      'avg_specificity': rank_head_metrics['avg_specificity'],
+    },
+    "keep_head_metrics" : {
+      'avg_loss': avg_loss,  # Same loss for both heads
+      'avg_f1_score': keep_head_metrics['avg_f1_score'],
+      'avg_accuracy': keep_head_metrics['avg_accuracy'],
+      'avg_precision': keep_head_metrics['avg_precision'],
+      'avg_recall': keep_head_metrics['avg_recall'],
+      'avg_specificity': keep_head_metrics['avg_specificity'],
+    }, 
     'thread_metrics' : { 
       'percentage_kept_long_threads' : thread_metrics["percentage_long_pruned"], 
       'percentage_kept_lone_threads' : thread_metrics["percentage_lone_pruned"],
@@ -313,7 +490,8 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, av
     'training_config': {
       'learning_rate': learning_rate,
       'optimizer': type(optimizer).__name__,
-      'loss_function': 'ListNetLoss',
+      'rank_loss_function': 'ListNetLoss',
+      "keep_loss_function" : "BCELoss",
       'max_messages_per_example': MAX_MESSAGES_PER_EXAMPLE,
       'num_examples': total_examples,
       'batch_size': BATCH_SIZE,
