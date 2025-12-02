@@ -1,4 +1,4 @@
-# Conversation Disentanglement with Neural Networks
+# Conversation Disentanglement RL Model
 
 A machine learning approach to separating interleaved conversation threads in multi-party chat data using a neural architecture with self-attention and teacher forcing.
 
