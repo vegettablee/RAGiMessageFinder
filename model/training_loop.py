@@ -13,11 +13,11 @@ import debug_display as dbg
 import numpy as np
 import random
 
-EPOCHS = 15 # each epoch is roughly 153 examples
+EPOCHS = 30 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
 F1_THRESHOLD = 0.5
 USE_CHECKPOINT = False
-SAVE_LAST_CHECKPOINT = True # saves a checkpoint after all epochs are finished 
+SAVE_LAST_CHECKPOINT = False # saves a checkpoint after all epochs are finished 
 SAVE_MODEL = False
 MAX_MESSAGES_PER_EXAMPLE = 17 # limit conversation length for faster training
 NUM_EXAMPLES = 5000 # number of examples to load, but not necessarily use 
@@ -27,7 +27,11 @@ PRUNE_LONG_NODES_PROB = 1.1 # cut all examples with thread length > 8
 PRUNE_LONG_NODE_LEN = 8 # minimum node length to prune 
 INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
 SIGMOID_THRESHOLD = 0.50 # 0.75 because I want the model to be confident about it's choices
-
+TEMPERATURE = 0.5 # used to make the keep_head have a sharper decision boundary 
+RANK_HEAD_WEIGHT = 1.0 # weighted scale factor for loss for rank head 
+KEEP_HEAD_WEIGHT = 1.25 # weighted scale factor for loss for keep head 
+# keep_head_weight trials : 1.5, 2.0, 1.25
+# temperate trials : 0.75, 0.5, 0.5
 model = SentenceTransformer("all-mpnet-base-v2")
 
 loss_fn = ListNetLoss() # ListNetLoss for first output head for ranking nodes 
@@ -192,7 +196,7 @@ def training_loop():
 
           keep_node_logits = keep_logits[0]
 
-          keep_node_probs = torch.sigmoid(keep_node_logits)
+          keep_node_probs = torch.sigmoid(keep_node_logits / TEMPERATURE)
           top_keep_indices = [] 
           pred_keep_ids = []
           pred_kept_messages = [] 
@@ -251,7 +255,8 @@ def training_loop():
           loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
           keep_loss = keep_loss_fn(keep_node_logits, torch.tensor(kept_truth_labels, dtype=torch.float32))
 
-          total_loss += loss + keep_loss # add both losses as one representation 
+          # trying a weighted sum, keep_head is more inaccurate in comparison to the ranking head 
+          total_loss += loss * RANK_HEAD_WEIGHT + keep_loss * KEEP_HEAD_WEIGHT # add both losses as one representation 
 
           # calculate accuracy: intersection of predicted and ground truth
           # accuracy is determined by whether the model predicted correct nodes as well as had the correct order 

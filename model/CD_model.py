@@ -14,6 +14,7 @@ import torch.nn.functional as F
         Activation: ReLU
         Dropout: 0.2 at each layer
 """
+
 class CDModel(nn.Module):
 
     def __init__(self, input_dim=768, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, dropout_rate=0.2):

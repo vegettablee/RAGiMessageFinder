@@ -23,7 +23,7 @@ In multi-party conversations (IRC, Slack, Discord), multiple conversation thread
 
 ### Neural Network Design
 
-The model uses a **self-attention enhanced feedforward architecture** with message embeddings as input:
+The model uses a **dual-head architecture with self-attention** that both ranks messages and decides which to keep:
 
 ```
 Input: Message Embeddings [batch_size, num_messages, 768]
@@ -37,13 +37,14 @@ Shared Backbone:
    ├─ Linear(256 → 128) + ReLU + Dropout(0.2)
    └─ Linear(128 → 64)  + ReLU + Dropout(0.2)
    ↓
-Output Head:
-   └─ Thread Head:  Linear(64 → 1) → [B, N]  (which messages belong to current thread)
+Dual Output Heads:
+   ├─ Rank Head:  Linear(64 → 1) → [B, N]  (ranks messages by thread membership)
+   └─ Keep Head:  Linear(64 → 1) → [B, N]  (decides which messages to keep/discard)
 ```
 
 **Key Design Choices:**
 
-1. **Self-Attention Layer** (Added in v2.0):
+1. **Self-Attention Layer**:
    - **4 attention heads** learn different message relationships:
      - Temporal proximity (messages close in time)
      - Semantic similarity (similar content)
@@ -62,16 +63,21 @@ Output Head:
    - ReLU activation for non-linearity
    - 20% dropout for regularization
 
-4. **Single Output Head** (Simplified from dual-head in v1.0):
-   - Predicts probability that each message belongs to current thread
-   - Top-k selection based on ground truth thread length
-   - Removed keep/discard head as nodes are removed after each iteration
+4. **Dual Output Heads**:
+   - **Rank Head**: Predicts ranking scores for messages using ListNetLoss
+     - Top-k selection based on highest softmax scores
+     - Learns relative importance and ordering of messages
+   - **Keep Head**: Predicts binary keep/discard decisions using BCELoss
+     - Sigmoid activation with temperature scaling (T=0.5 for sharper boundaries)
+     - Threshold at 0.50 for final keep/discard decisions
+   - **Joint Loss**: Weighted sum combines both heads (rank_weight=1.0, keep_weight=1.25)
+     - Allows both heads to directly influence each other during training
 
 ## Training Strategy
 
 ### Iterative Thread Prediction with Teacher Forcing
 
-The model is trained using a **sequential teacher-forcing approach** where it learns to predict threads one at a time:
+The model is trained using a **sequential teacher-forcing approach with dual head predictions**:
 
 ```python
 For each conversation:
@@ -81,23 +87,32 @@ For each conversation:
         # 1. Encode remaining messages
         embeddings = encode(remaining_messages)
 
-        # 2. Forward pass (with self-attention)
+        # 2. Forward pass (with self-attention + dual heads)
         attn_output = self_attention(embeddings)
         embeddings = embeddings + attn_output  # Residual
-        thread_logits = model(embeddings)
+        rank_logits, keep_logits = model(embeddings)
 
-        # 3. Select top-k messages (k = length of ground truth)
-        predictions = topk(thread_logits, k=len(ground_truth_thread))
+        # 3a. Rank Head: Select top-k messages by ranking scores
+        rank_probs = softmax(rank_logits)
+        rank_predictions = topk(rank_probs, k=len(ground_truth_thread))
 
-        # 4. Compute loss with ranking
-        true_labels = rank_based_labels(ground_truth_thread)
-        loss = ListNetLoss(predictions, true_labels)
+        # 3b. Keep Head: Select messages above sigmoid threshold
+        keep_probs = sigmoid(keep_logits / temperature)
+        keep_predictions = keep_probs > threshold  # T=0.5, threshold=0.50
+
+        # 4. Compute joint loss from both heads
+        rank_labels = rank_based_labels(ground_truth_thread)
+        keep_labels = binary_labels(ground_truth_thread)
+
+        rank_loss = ListNetLoss(rank_logits, rank_labels)
+        keep_loss = BCEWithLogitsLoss(keep_logits, keep_labels)
+        total_loss += rank_weight * rank_loss + keep_weight * keep_loss
 
         # 5. Teacher forcing: remove ground truth messages
         remaining_messages = remaining_messages - ground_truth_thread
 
     # 6. Backpropagate accumulated loss
-    loss.backward()
+    total_loss.backward()
     optimizer.step()
 ```
 
@@ -110,19 +125,40 @@ For each conversation:
 
 ### Loss Function
 
-**Primary Loss**: ListNetLoss (Listwise Ranking Loss)
+**Joint Loss Function**: Weighted sum of two complementary losses
 ```python
-# Rank-based labels: higher rank for correct thread members
-# Model learns both membership AND ordering
-loss = ListNetLoss(thread_logits, rank_labels)
+# Rank Head: ListNetLoss for ranking messages
+rank_labels = descending_ranks(ground_truth_thread)  # [3, 2, 1, 0, 0, ...]
+rank_loss = ListNetLoss(rank_logits, rank_labels)
+
+# Keep Head: BCEWithLogitsLoss for binary keep/discard decisions
+keep_labels = binary_labels(ground_truth_thread)     # [1, 1, 1, 0, 0, ...]
+keep_loss = BCEWithLogitsLoss(keep_logits, keep_labels)
+
+# Joint Loss: Weighted combination (EXPERIMENTAL)
+total_loss = rank_weight * rank_loss + keep_weight * keep_loss
+# Currently experimenting with: rank_weight=1.0, keep_weight=1.25
+# Previous trials: keep_weight=[1.5, 2.0, 1.25]
 ```
 
-**Why ListNetLoss over BCE?**
-- Captures **ordering information** (not just set membership)
-- Better for conversational flow where message sequence matters
-- Uses cross-entropy between probability distributions
+**Why Dual Head Loss?**
+- **Rank Head (ListNetLoss)**:
+  - Captures **ordering information** (not just set membership)
+  - Better for conversational flow where message sequence matters
+  - Uses cross-entropy between probability distributions
+- **Keep Head (BCELoss)**:
+  - Provides explicit binary signal for message selection
+  - **Temperature scaling (EXPERIMENTAL)**: T=0.5 creates sharper decision boundaries
+    - Previous temperature trials: [0.75, 0.5]
+  - Threshold=0.50 for final keep/discard decisions
+  - Allows model to learn when to keep/discard messages independently
+- **Joint Training**:
+  - Both heads influence each other during backpropagation
+  - Rank head learns "which and in what order", keep head learns "whether to include"
+  - **Weighted loss experiments**: Testing different weight ratios to balance head contributions
+    - Higher keep_weight compensates for keep head's lower initial accuracy
 
-**Evaluation Metrics**:
+**Evaluation Metrics** (tracked separately for each head + combined):
 - **F1 Score**: Harmonic mean of precision and recall (primary metric)
 - **Accuracy**: Correct predictions with exact positional matching
 - **Precision**: Proportion of predicted messages that are correct
@@ -131,36 +167,42 @@ loss = ListNetLoss(thread_logits, rank_labels)
 
 ## Results
 
-### Performance Comparison: With vs. Without Self-Attention
+### Architecture Evolution Results
 
 Training on IRC Disentanglement Dataset (max 17 messages per example)
 
-| Configuration | Epochs | F1 Score | Accuracy | Precision | Recall | Specificity | Loss |
-|--------------|--------|----------|----------|-----------|--------|-------------|------|
-| **Without Attention** | 10 | 0.687 | 0.449 | 0.687 | 0.687 | 0.692 | 0.750 |
-| **With 4-Head Attention** | 25 | **0.784** | **0.518** | **0.784** | **0.783** | **0.761** | **0.586** |
+**Single Head Without Attention** (10 epochs)
+| Metric | F1 Score | Accuracy | Precision | Recall | Specificity | Loss |
+|--------|----------|----------|-----------|--------|-------------|------|
+| Result | 0.687 | 0.449 | 0.687 | 0.687 | 0.692 | 0.750 |
 
-**Improvement with Self-Attention:**
-- F1 Score: **+14.1%** (0.687 → 0.784)
-- Accuracy: **+15.4%** (0.449 → 0.518)
-- Loss: **-21.9%** (0.750 → 0.586)
+**Single Head + 4-Head Self-Attention** (25 epochs)
+| Metric | F1 Score | Accuracy | Precision | Recall | Specificity | Loss |
+|--------|----------|----------|-----------|--------|-------------|------|
+| Result | 0.784 | 0.518 | 0.784 | 0.783 | 0.761 | 0.586 |
 
-### Training Progression (With Self-Attention)
+**Dual Head + 4-Head Self-Attention** (30 epochs, current approach)
 
-| Epoch | F1 Score | Accuracy | Loss | Examples |
-|-------|----------|----------|------|----------|
-| 1 | 0.444 | 0.198 | 1.082 | 153 |
-| 5 | 0.552 | 0.304 | 0.991 | 765 |
-| 10 | 0.687 | 0.449 | 0.750 | 1530 |
-| 15 | 0.715 | 0.455 | 0.883 | 2295 |
-| 20 | 0.733 | 0.471 | 0.769 | 3060 |
-| **25** | **0.784** | **0.518** | **0.586** | **3825** |
+*Combined Metrics (average of both heads):*
+| Metric | F1 Score | Accuracy | Precision | Recall | Specificity | Loss |
+|--------|----------|----------|-----------|--------|-------------|------|
+| Result | 0.679 | 0.567 | 0.692 | 0.704 | 0.799 | 1.044 |
+
+*Rank Head Performance:*
+| Metric | F1 Score | Accuracy | Precision | Recall | Specificity |
+|--------|----------|----------|-----------|--------|-------------|
+| Result | 0.809 | 0.534 | 0.809 | 0.809 | 0.804 |
+
+*Keep Head Performance:*
+| Metric | F1 Score | Accuracy | Precision | Recall | Specificity |
+|--------|----------|----------|-----------|--------|-------------|
+| Result | 0.549 | 0.599 | 0.575 | 0.599 | 0.794 |
 
 **Key Observations:**
-1. **Early epochs (1-5)**: Model learns basic thread membership (~44-55% F1)
-2. **Mid-training (6-15)**: Attention heads start capturing relationships (55-71% F1)
-3. **Late training (16-25)**: Model refines ordering and boundaries (71-78% F1)
-4. **Attention impact**: Self-attention allows model to learn message interactions, significantly boosting performance
+1. **Self-attention integration**: Added multi-head attention to capture message relationships
+2. **Dual head approach**: Rank head shows strong performance (F1: 0.809), while keep head is still being optimized
+3. **Ongoing experiments**: Testing different temperature values (0.5, 0.75) and loss weights (1.0/1.25, 1.0/1.5, 1.0/2.0) to improve keep head accuracy
+4. **Higher specificity**: Dual head architecture achieves 0.799 combined specificity, showing better non-thread message exclusion
 
 ### Dataset Characteristics
 
@@ -219,12 +261,19 @@ ATTENTION_HEADS = 4      # Multi-head self-attention
 HIDDEN_DIMS = [256, 128, 64]
 DROPOUT = 0.2
 ACTIVATION = ReLU
+OUTPUT_HEADS = 2         # Rank head + Keep head
 
 # Training hyperparameters
-EPOCHS = 25
+EPOCHS = 30
 BATCH_SIZE = 5
 LEARNING_RATE = 0.001
 OPTIMIZER = Adam
+
+# Loss function hyperparameters (EXPERIMENTAL)
+RANK_HEAD_WEIGHT = 1.0          # Weight for ListNetLoss
+KEEP_HEAD_WEIGHT = 1.25         # Weight for BCELoss (testing: 1.25, 1.5, 2.0)
+TEMPERATURE = 0.5               # Temperature scaling for keep head (testing: 0.5, 0.75)
+SIGMOID_THRESHOLD = 0.50        # Threshold for binary keep/discard decisions
 
 # Data configuration
 MAX_MESSAGES_PER_EXAMPLE = 17   # Truncate long conversations
@@ -268,19 +317,28 @@ PRUNE_LONG_NODE_LEN = 8        # Threshold for "long" threads
 
 ## Architecture Evolution
 
-### v1.0: Dual-Head Baseline
-- **Architecture**: Two output heads (thread + keep/discard)
+### v1.0: Single-Head Baseline
+- **Architecture**: Single thread prediction head
 - **Loss**: Binary Cross-Entropy (BCE)
-- **Results**: Functional but complex, keep head redundant
+- **Results**: F1: 0.687, Accuracy: 0.449
 
-### v2.0: Single-Head + Self-Attention (Current)
+### v2.0: Single-Head + Self-Attention
 - **Architecture**: Self-attention (4 heads) + single thread prediction head
 - **Loss**: ListNetLoss (ranking-aware)
 - **Key improvements**:
   - Self-attention learns message relationships
-  - Simplified to single output head
   - Ranking-aware loss for conversation flow
-  - **78.4% F1 score** (14% improvement over baseline)
+- **Results**: F1: 0.784, Accuracy: 0.518
+
+### v3.0: Dual-Head + Self-Attention (Current)
+- **Architecture**: Self-attention (4 heads) + two output heads (rank + keep/discard)
+- **Loss**: Joint loss with ListNetLoss + BCELoss
+- **Key improvements**:
+  - Rank head: Learns message ordering (F1: 0.809)
+  - Keep head: Learns binary keep/discard decisions (F1: 0.549)
+  - Joint loss allows both heads to influence each other
+  - Experimenting with temperature scaling and loss weights for optimization
+- **Results**: Rank Head F1: 0.809, Keep Head F1: 0.549 (in progress)
 
 ## Key Implementation Details
 
@@ -313,12 +371,19 @@ Predicting threads **one at a time** (instead of all at once):
 - Allows teacher forcing for each thread
 - Matches inference-time behavior
 
-### 3. Ranking-Aware Loss
+### 3. Dual Head Architecture with Joint Loss
 
-**ListNetLoss** vs. **BCE**:
-- BCE: "Is this message in the thread?" (yes/no)
-- ListNetLoss: "Rank all messages by thread membership" (1st, 2nd, 3rd...)
-- Captures **ordering** which is crucial for conversational coherence
+**Rank Head (ListNetLoss)** + **Keep Head (BCELoss)**:
+- **Rank Head**: "Rank all messages by thread membership" (1st, 2nd, 3rd...)
+  - Captures **ordering** which is crucial for conversational coherence
+  - Consistently achieves strong F1 scores (0.809)
+- **Keep Head**: "Should this message be kept or discarded?" (binary decision)
+  - Provides explicit signal for message selection
+  - Temperature scaling creates sharper decision boundaries
+  - Currently being optimized through weight and temperature experiments
+- **Joint Loss**: Weighted combination allows both heads to inform each other during training
+  - Experimenting with different weight ratios (1.0/1.25, 1.0/1.5, 1.0/2.0)
+  - Higher keep_weight compensates for keep head's initially lower accuracy
 
 ### 4. Dynamic Pruning
 
