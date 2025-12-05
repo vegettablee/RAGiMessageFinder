@@ -20,14 +20,14 @@ USE_CHECKPOINT = False
 SAVE_LAST_CHECKPOINT = False # saves a checkpoint after all epochs are finished 
 SAVE_MODEL = False
 MAX_MESSAGES_PER_EXAMPLE = 17 # limit conversation length for faster training
-NUM_EXAMPLES = 100000 # number of examples to load, but not necessarily use 
+NUM_EXAMPLES = 5000 # number of examples to load, but not necessarily use 
 TEACHER_FORCE = True # when false, let the model choose freely
 PRUNE_SELF_NODES_PROB = 0.75 # only keep 25 percent of nodes who do not have any connections 
 PRUNE_LONG_NODES_PROB = 1.1 # cut all examples with thread length > 8 
-PRUNE_LONG_NODE_LEN = 6 # minimum node length to prune 
+PRUNE_LONG_NODE_LEN = 8 # minimum node length to prune 
 INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
-SIGMOID_THRESHOLD = 0.75 # 0.75 because I want the model to be confident about it's choices
-TEMPERATURE = 0.70 # used to make the keep_head have a sharper decision boundary 
+SIGMOID_THRESHOLD = 0.5 # 0.75 because I want the model to be confident about it's choices
+TEMPERATURE = 0.5 # used to make the keep_head have a sharper decision boundary 
 RANK_HEAD_WEIGHT = 1.0 # weighted scale factor for loss for rank head 
 KEEP_HEAD_WEIGHT = 1.5 # weighted scale factor for loss for keep head 
 # keep_head_weight trials : 1.5, 2.0, 1.25
@@ -191,6 +191,11 @@ def training_loop():
           if dbg.should_show_debug_for_example(batch_idx) and thread_idx == 0:
             dbg.display_embedding_info(current_messages, messages_emb, input_tensor)
 
+
+          # in this version, the keep head will determine the top k of the ranking head 
+          # this is because earlier, there was an issue with the gradients of the output heads 
+          # with having keep head directly influence the rank head, once the relationship is learned, i hope the loss 
+          # becomes significantly better 
           thread_logits, keep_logits = cd_model(input_tensor) # shape [B, N]
           # print("Shape of keep logits " + str(keep_logits.shape))
 
@@ -198,9 +203,11 @@ def training_loop():
 
           keep_node_probs = torch.sigmoid(keep_node_logits / TEMPERATURE)
           top_keep_indices = [] 
-          pred_keep_ids = []
+          pred_kept_ids = []
           pred_kept_messages = [] 
           has_kept_pred = False
+
+          
           for idx, i in enumerate(keep_node_probs): # get all messages above sigmoid threshold 
             if i >= SIGMOID_THRESHOLD: 
               top_keep_indices.append(idx)
@@ -209,27 +216,38 @@ def training_loop():
           if has_kept_pred is True: # there was a sigmoid value above threshold
             for idx in top_keep_indices:
               pred_kept_id = remaining_nodes[idx]
-              pred_keep_ids.append(pred_kept_id)
+              pred_kept_ids.append(pred_kept_id)
               pred_kept_messages.append(messages[pred_kept_id - 1])
 
-          # print("Kept ids " + str(pred_keep_ids))
-              
           node_logits = thread_logits[0]
           # print(str(node_logits))
           thread_probs = torch.softmax(node_logits, dim=-1) # use softmax because of ListNet loss instead of BCE
-          top_k = min(len(correct_thread), len(thread_probs)) # ensure k doesn't exceed available elements
+          top_k = len(top_keep_indices) if len(top_keep_indices) > 0 else 1 # keep top-k
           top_values, top_indices = torch.topk(thread_probs, k=top_k) 
-         
+          scores = [] 
+
           predicted = []
           pred_ids = []
-          for idx in range(len(top_indices)):
-            index = top_indices[idx].item()  # convert tensor to int
-            pred_id = remaining_nodes[index] # find index of id predicted, the map to original message array
-            predicted.append(messages[pred_id - 1])
-            pred_ids.append(pred_id) # ids that were predicted
+          
+          if has_kept_pred is False: # no pred id from keep head, below threshold, just pick top-1 softmax message 
+            for idx in range(len(top_indices)):
+              index = top_indices[idx].item()  # convert tensor to int
+              pred_id = remaining_nodes[index] # find index of id predicted, the map to original message array
+              predicted.append(messages[pred_id - 1])
+              pred_ids.append(pred_id) # ids that were predicted
+          else: 
+            for idx in top_keep_indices: 
+              scores.append({"idx" : idx, "score" : node_logits[idx]})
+            scores = sorted(scores, key=lambda x : x["score"], reverse=True)
+            for item in scores: 
+              score = item["score"]
+              idx = item["idx"] # index relative to all the node probabilities 
+              pred_id = remaining_nodes[idx]
+              predicted.append(messages[pred_id - 1])
+              pred_ids.append(pred_id)
 
           rank_f1_score, rank_precision, rank_recall, rank_specificity = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
-          keep_f1_score, keep_precision, keep_recall, keep_specificy = compute_loss_f1(pred_keep_ids, remaining_nodes, list(correct_thread))
+          keep_f1_score, keep_precision, keep_recall, keep_specificy = compute_loss_f1(pred_kept_ids, remaining_nodes, list(correct_thread))
           
 
           used_nodes = list(correct_thread)
@@ -259,21 +277,21 @@ def training_loop():
           total_loss += loss * RANK_HEAD_WEIGHT + keep_loss * KEEP_HEAD_WEIGHT # add both losses as one representation 
 
           # calculate accuracy: intersection of predicted and ground truth
-          # accuracy is determined by whether the model predicted correct nodes as well as had the correct order 
+          # accuracy is determined by whether the model predicted correct nodes as well as had the correct order
           total_correct = 0
-          for idx, pred in enumerate(pred_ids): 
+          for idx in range(min(len(pred_ids), len(correct_thread))): # since keep head influences rank head, pred_ids can have a dif len
             if pred_ids[idx] == correct_thread[idx]:
-              total_correct += 1 
-    
+              total_correct += 1
+
           if total_correct == 0: # no correct predictions
             accuracy = 0
-          else: 
+          else:
             accuracy = total_correct / len(correct_thread)
           
           kept_correct = 0 # calculate the accuracy for the kept nodes
           if has_kept_pred is True: 
             kept_correct = 0 
-            for idx, pred in enumerate(pred_keep_ids): 
+            for idx, pred in enumerate(pred_kept_ids): 
               if pred in correct_nodes: 
                 kept_correct += 1
             kept_accuracy = kept_correct / len(correct_thread)
@@ -398,12 +416,39 @@ def training_loop():
     epoch_keep_avg_recall = sum(epoch_keep_recall_scores) / len(epoch_keep_recall_scores) if epoch_keep_recall_scores else 0.0
     epoch_keep_avg_specificity = sum(epoch_keep_specificity_scores) / len(epoch_keep_specificity_scores) if epoch_keep_specificity_scores else 0.0
 
+    # Calculate comprehensive thread distribution metrics
+    num_long_kept = num_long_threads - num_long_pruned
+    num_lone_kept = num_lone_threads - num_lone_pruned
+    num_normal_threads = total_threads - num_long_threads - num_lone_threads
+    threads_kept = total_threads - num_long_pruned - num_lone_pruned
+
     thread_metrics = {
-    "percentage_long_pruned" : (num_long_threads - num_long_pruned) / total_threads, # percentage kept relative to pruned for long threads
-    "percentage_lone_pruned" : (num_lone_threads - num_lone_pruned) / total_threads, # percentage kept relative to prune for lone threads 
-    "percentage_long_threads" : (num_long_threads / total_threads), # percentage of long threads relative to the entire dataset
-    "percentage_lone_threads" : num_lone_threads / total_threads, # percentage of lone threads relative to the entire dataset 
+      # Raw counts
+      "total_threads_encountered": total_threads,
+      "threads_kept_after_pruning": threads_kept,
+      "long_threads_encountered": num_long_threads,
+      "long_threads_kept": num_long_kept,
+      "long_threads_pruned": num_long_pruned,
+      "lone_threads_encountered": num_lone_threads,
+      "lone_threads_kept": num_lone_kept,
+      "lone_threads_pruned": num_lone_pruned,
+      "normal_threads": num_normal_threads,
+
+      # Percentages of original dataset
+      "pct_long_of_total": (num_long_threads / total_threads) * 100 if total_threads > 0 else 0,
+      "pct_lone_of_total": (num_lone_threads / total_threads) * 100 if total_threads > 0 else 0,
+      "pct_normal_of_total": (num_normal_threads / total_threads) * 100 if total_threads > 0 else 0,
+
+      # Pruning rates
+      "long_prune_rate": (num_long_pruned / num_long_threads) * 100 if num_long_threads > 0 else 0,
+      "lone_prune_rate": (num_lone_pruned / num_lone_threads) * 100 if num_lone_threads > 0 else 0,
+
+      # Final dataset composition (after pruning)
+      "pct_long_in_final": (num_long_kept / threads_kept) * 100 if threads_kept > 0 else 0,
+      "pct_lone_in_final": (num_lone_kept / threads_kept) * 100 if threads_kept > 0 else 0,
+      "pct_normal_in_final": (num_normal_threads / threads_kept) * 100 if threads_kept > 0 else 0,
     }
+
     print(f"\n{'='*80}")
     print(f"EPOCH {epoch + 1} SUMMARY")
     print(f"{'='*80}")
@@ -413,6 +458,19 @@ def training_loop():
     print(f"Average Precision:   {epoch_avg_precision:.4f}")
     print(f"Average Recall:      {epoch_avg_recall:.4f}")
     print(f"Average Specificity: {epoch_avg_specificity:.4f}")
+    print(f"{'='*80}")
+    print(f"DATASET COMPOSITION")
+    print(f"{'='*80}")
+    print(f"Total Threads:       {total_threads}")
+    print(f"Threads After Prune: {threads_kept} ({(threads_kept/total_threads)*100:.1f}% kept)")
+    print(f"\nThread Distribution (Original):")
+    print(f"  Long (>{PRUNE_LONG_NODE_LEN}):  {num_long_threads:4d} ({thread_metrics['pct_long_of_total']:.1f}%) → {num_long_kept:4d} kept, {num_long_pruned:4d} pruned ({thread_metrics['long_prune_rate']:.1f}% prune rate)")
+    print(f"  Lone (=1):    {num_lone_threads:4d} ({thread_metrics['pct_lone_of_total']:.1f}%) → {num_lone_kept:4d} kept, {num_lone_pruned:4d} pruned ({thread_metrics['lone_prune_rate']:.1f}% prune rate)")
+    print(f"  Normal:       {num_normal_threads:4d} ({thread_metrics['pct_normal_of_total']:.1f}%) → {num_normal_threads:4d} kept (no pruning)")
+    print(f"\nFinal Dataset Composition:")
+    print(f"  Long:         {thread_metrics['pct_long_in_final']:.1f}%")
+    print(f"  Lone:         {thread_metrics['pct_lone_in_final']:.1f}%")
+    print(f"  Normal:       {thread_metrics['pct_normal_in_final']:.1f}%")
     print(f"{'='*80}\n")
 
     # Save epoch data
@@ -485,12 +543,7 @@ def save_data(cd_model, optimizer, epoch_num, avg_loss, avg_f1, avg_accuracy, av
       'avg_recall': keep_head_metrics['avg_recall'],
       'avg_specificity': keep_head_metrics['avg_specificity'],
     }, 
-    'thread_metrics' : { 
-      'percentage_kept_long_threads' : thread_metrics["percentage_long_pruned"], 
-      'percentage_kept_lone_threads' : thread_metrics["percentage_lone_pruned"],
-      'percentage_total_long_threads' : thread_metrics["percentage_long_threads"], 
-      'percentage_total_lone_threads' : thread_metrics["percentage_lone_threads"]
-    },
+    'thread_metrics': thread_metrics,
     'model_config': model_config,
     'training_config': {
       'learning_rate': learning_rate,

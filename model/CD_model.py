@@ -24,17 +24,16 @@ class CDModel(nn.Module):
         
         self.input_dim = input_dim
         
-        self.hidden_dim1 = hidden_dim1
-        self.hidden_dim2 = hidden_dim2
-        self.hidden_dim3 = hidden_dim3
+        self.hidden_dim1 = hidden_dim2
+        self.hidden_dim2 = hidden_dim3
+
         self.dropout_rate = dropout_rate
 
         self.attn = nn.MultiheadAttention(embed_dim=input_dim, num_heads=4, batch_first=True)
 
         # Define shared backbone layers
-        self.fc1 = nn.Linear(input_dim, hidden_dim1)
-        self.fc2 = nn.Linear(hidden_dim1, hidden_dim2)
-        self.fc3 = nn.Linear(hidden_dim2, hidden_dim3)
+        self.fc1 = nn.Linear(input_dim, hidden_dim2)
+        self.fc2 = nn.Linear(hidden_dim2, hidden_dim3)
 
         # Two output heads (multi-head architecture)
         self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
