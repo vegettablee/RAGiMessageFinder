@@ -94,6 +94,37 @@ def build_message_tree(group):
   # Sort threads by starting node (first element of tuple)
   correct_threads.sort(key=lambda x: x[0])
 
+  # Merge overlapping threads (threads that share any common nodes)
+  # This handles cases where a node has multiple backward references
+  merged_groups = []
+
+  for thread in correct_threads:
+    thread_set = set(thread)
+
+    # Find all groups that overlap with this thread
+    overlapping_groups = []
+    non_overlapping_groups = []
+
+    for group in merged_groups:
+      if thread_set & group:  # If there's any overlap
+        overlapping_groups.append(group)
+      else:
+        non_overlapping_groups.append(group)
+
+    # Merge this thread with all overlapping groups
+    merged_set = thread_set
+    for group in overlapping_groups:
+      merged_set |= group
+
+    # Add the merged set back
+    non_overlapping_groups.append(merged_set)
+    merged_groups = non_overlapping_groups
+
+  # Convert sets back to sorted tuples
+  final_correct_threads = [tuple(sorted(group)) for group in merged_groups]
+    
+
+
   # Build node_counter: default all nodes to counter = 1
   node_counter = {}
   for node_id in ids:
@@ -116,7 +147,7 @@ def build_message_tree(group):
     if node.id in self_refs:
       self_referenced_nodes.append(node)
 
-  return message_tree, correct_threads
+  return message_tree, final_correct_threads
 
 
 def _construct_fully_connected_tree(raw_messages, ids, dates, node_counter):

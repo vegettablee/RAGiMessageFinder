@@ -12,6 +12,7 @@ from save import save_model, save_checkpoint
 import debug_display as dbg
 import numpy as np
 import random
+import math
 
 EPOCHS = 30 # each epoch is roughly 153 examples
 BATCH_SIZE = 5 # since each thread technically gets 4 different model predictions
@@ -26,10 +27,10 @@ PRUNE_SELF_NODES_PROB = 0.75 # only keep 25 percent of nodes who do not have any
 PRUNE_LONG_NODES_PROB = 1.1 # cut all examples with thread length > 8 
 PRUNE_LONG_NODE_LEN = 6 # minimum node length to prune 
 INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
-SIGMOID_THRESHOLD = 0.75 # 0.75 because I want the model to be confident about it's choices
-TEMPERATURE = 0.70 # used to make the keep_head have a sharper decision boundary 
-RANK_HEAD_WEIGHT = 1.0 # weighted scale factor for loss for rank head 
-KEEP_HEAD_WEIGHT = 1.5 # weighted scale factor for loss for keep head 
+SIGMOID_THRESHOLD = 0.60 # 0.75 because I want the model to be confident about it's choices
+TEMPERATURE = 1.5 # used to make the keep_head have a sharper decision boundary 
+RANK_HEAD_WEIGHT = 0.5 # weighted scale factor for loss for rank head 
+KEEP_HEAD_WEIGHT = 1.0 # weighted scale factor for loss for keep head 
 # keep_head_weight trials : 1.5, 2.0, 1.25
 # temperate trials : 0.75, 0.5, 0.5
 model = SentenceTransformer("all-mpnet-base-v2")
@@ -38,6 +39,22 @@ loss_fn = ListNetLoss() # ListNetLoss for first output head for ranking nodes
 keep_loss_fn = nn.BCEWithLogitsLoss() # BCEloss for second output head for keeping/discarding nodes
 
 # all nodes are a direct reference to a real message
+
+def create_positional_embedding(embedding_dim, batch_size): # batch-size is the number of messages
+  even_indices = torch.arange(0, embedding_dim, step=2)
+  odd_indices = torch.arange(1, embedding_dim, step=2)
+  final_PE = torch.zeros(batch_size, embedding_dim)
+  for i in range(batch_size): 
+    pos = i 
+    div_term = torch.exp(-math.log(10000.0) * even_indices / embedding_dim)
+    PE = torch.zeros(embedding_dim)
+    PE[even_indices] = torch.sin(pos * div_term)
+    PE[odd_indices] = torch.cos(pos * div_term)
+    final_PE[i] = PE
+
+  return final_PE
+
+
 def training_loop():
   # Initialize models
   if USE_CHECKPOINT is False: 
@@ -97,6 +114,7 @@ def training_loop():
 
         original_messages = example["raw"].copy() # keep a copy
         ids = example["id"] # [1,2,3,etc] direct index for nodes
+        debug_ids = ids.copy()
         dates = example["date"] # contains the full date of each message
         connections = example["connections"] # original data used for ground truth, may not be needed
         message_tree, correct_threads = build_message_tree(example) # construct message tree with example
@@ -105,23 +123,23 @@ def training_loop():
         #print("Messages before removing : " + str(messages))
         #print("Threads before removing : " + str(correct_threads) + "\n\n")
         total_threads += len(correct_threads)
-        for thread_idx, thread in enumerate(correct_threads):
-          if len(thread) == 1: 
+        for thread_idx, thread in enumerate(correct_threads.copy()):  # Iterate over a copy!
+          if len(thread) == 1:
             rand = random.uniform(0.0, 1.0)
             num_lone_threads += 1
-            if(rand < PRUNE_SELF_NODES_PROB): 
+            if(rand < PRUNE_SELF_NODES_PROB):
               message_tree, removed = remove_used_nodes(message_tree, thread)
               root_id = removed[0].id
               # print("root id : " + str(root_id))
               ids.remove(root_id)
               correct_threads.remove(thread)
               num_lone_pruned += 1
-          if len(thread) > PRUNE_LONG_NODE_LEN: # sometimes prune nodes with exceedingly greater length 
-            num_long_threads += 1 
+          if len(thread) > PRUNE_LONG_NODE_LEN: # sometimes prune nodes with exceedingly greater length
+            num_long_threads += 1
             rand = random.uniform(0.0, 1.0)
-            if(rand < PRUNE_LONG_NODES_PROB): 
+            if(rand < PRUNE_LONG_NODES_PROB):
               message_tree, removed = remove_used_nodes(message_tree, thread)
-              for node in removed: 
+              for node in removed:
                 ids.remove(node.id)
               correct_threads.remove(thread)
               num_long_pruned += 1
@@ -132,7 +150,7 @@ def training_loop():
         # Debug display for first N examples
         if dbg.should_show_debug_for_example(batch_idx):
           dbg.display_full_conversation(batch_idx + 1, original_messages, ids)
-          dbg.display_raw_connections(connections, ids)
+          dbg.display_raw_connections(connections, debug_ids)
           dbg.display_ground_truth_threads(correct_threads, original_messages)
           dbg.display_node_counters(message_tree, correct_threads)
         
@@ -167,7 +185,7 @@ def training_loop():
         num_threads_skipped = 0 
 
         for thread_idx, correct_thread in enumerate(correct_threads):
-          if thread_idx == len(original_messages) - 1: # to handle cases like this where node 12 (counter: 0) -> connected to: []
+          if thread_idx == len(original_messages) - 1 or len(correct_threads) == len(remaining_nodes): # to handle cases like this where node 12 (counter: 0) -> connected to: []
             break
           if thread_idx == len(correct_threads) - 1: # on last thread
             if len(correct_thread) == 1: # only keep if thread is not a lone-node
@@ -182,6 +200,9 @@ def training_loop():
 
           messages_emb = model.encode(current_messages)
 
+          positional_emb = create_positional_embedding(embedding_dim=768, batch_size=len(current_messages)) 
+
+          messages_emb = messages_emb + positional_emb.numpy()
           num_possible_outputs = len(current_messages)
           # print("total of number possible messages for model to pick " + str(num_possible_outputs))
           # batch_size to 1 for initial testing
@@ -202,7 +223,7 @@ def training_loop():
           pred_kept_messages = [] 
           has_kept_pred = False
           for idx, i in enumerate(keep_node_probs): # get all messages above sigmoid threshold 
-            if i >= SIGMOID_THRESHOLD: 
+            if i > SIGMOID_THRESHOLD: 
               top_keep_indices.append(idx)
               has_kept_pred = True
           
@@ -211,13 +232,12 @@ def training_loop():
               pred_kept_id = remaining_nodes[idx]
               pred_keep_ids.append(pred_kept_id)
               pred_kept_messages.append(messages[pred_kept_id - 1])
-
           # print("Kept ids " + str(pred_keep_ids))
               
           node_logits = thread_logits[0]
           # print(str(node_logits))
           thread_probs = torch.softmax(node_logits, dim=-1) # use softmax because of ListNet loss instead of BCE
-          top_k = min(len(correct_thread), len(thread_probs)) # ensure k doesn't exceed available elements
+          top_k = len(pred_keep_ids) if len(pred_keep_ids) > 0 else 1 # ensure k doesn't exceed available elements
           top_values, top_indices = torch.topk(thread_probs, k=top_k) 
          
           predicted = []
@@ -231,7 +251,6 @@ def training_loop():
           rank_f1_score, rank_precision, rank_recall, rank_specificity = compute_loss_f1(pred_ids, remaining_nodes, list(correct_thread))
           keep_f1_score, keep_precision, keep_recall, keep_specificy = compute_loss_f1(pred_keep_ids, remaining_nodes, list(correct_thread))
           
-
           used_nodes = list(correct_thread)
 
           correct_nodes = set(correct_thread)
@@ -252,16 +271,37 @@ def training_loop():
           #print("Rank truth labels : " + str(true_labels))
           #print("Kept truth labels : " + str(kept_truth_labels))
 
-          loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
+          rank_loss = loss_fn(node_logits, torch.tensor(true_labels, dtype=torch.float32))
           keep_loss = keep_loss_fn(keep_node_logits, torch.tensor(kept_truth_labels, dtype=torch.float32))
 
-          # trying a weighted sum, keep_head is more inaccurate in comparison to the ranking head 
-          total_loss += loss * RANK_HEAD_WEIGHT + keep_loss * KEEP_HEAD_WEIGHT # add both losses as one representation 
+          # Add penalty for over-prediction to discourage predicting too many nodes
+          over_pred_penalty = torch.relu(torch.tensor(len(pred_keep_ids) - len(correct_thread), dtype=torch.float32)) * 25
+
+          # trying a weighted sum, keep_head is more inaccurate in comparison to the ranking head
+          total_loss += rank_loss * RANK_HEAD_WEIGHT + keep_loss * KEEP_HEAD_WEIGHT + over_pred_penalty # add both losses as one representation
+
+          # Gradient-based penalty for first node using ReLU
+          first_node_id = correct_thread[0]
+          first_node_idx = remaining_nodes.index(first_node_id)
+          first_node_logit = keep_node_logits[first_node_idx]
+
+          # Penalize if logit is below threshold (logit=0 corresponds to sigmoid=0.5)
+          target_logit = torch.log(torch.tensor(SIGMOID_THRESHOLD) / (1 - SIGMOID_THRESHOLD))
+          first_node_penalty = torch.relu(target_logit - first_node_logit) * 5
+
+          if len(correct_thread) != 1:
+            last_node_id = correct_thread[len(correct_thread) - 1]
+            last_node_idx = remaining_nodes.index(last_node_id)
+            last_node_logit = keep_node_logits[last_node_idx]
+            last_node_penalty = torch.relu(target_logit - last_node_logit) * 0.8
+            # total_loss += last_node_penalty
+            
+          total_loss += first_node_penalty 
 
           # calculate accuracy: intersection of predicted and ground truth
-          # accuracy is determined by whether the model predicted correct nodes as well as had the correct order 
+          # accuracy is determined by whether the model predicted correct nodes as well as had the correct order
           total_correct = 0
-          for idx, pred in enumerate(pred_ids): 
+          for idx in range(min(len(pred_ids), len(correct_thread))):
             if pred_ids[idx] == correct_thread[idx]:
               total_correct += 1 
     
@@ -271,14 +311,15 @@ def training_loop():
             accuracy = total_correct / len(correct_thread)
           
           kept_correct = 0 # calculate the accuracy for the kept nodes
-          if has_kept_pred is True: 
-            kept_correct = 0 
-            for idx, pred in enumerate(pred_keep_ids): 
-              if pred in correct_nodes: 
+          if has_kept_pred is True:
+            kept_correct = 0
+            for idx, pred in enumerate(pred_keep_ids):
+              if pred in correct_nodes:
                 kept_correct += 1
-            kept_accuracy = kept_correct / len(correct_thread)
-          else: 
-            kept_accuracy = 0 
+            # Penalize over-prediction by using max of predictions and ground truth
+            kept_accuracy = kept_correct / max(len(pred_keep_ids), len(correct_thread))
+          else:
+            kept_accuracy = 0
 
           general_accuracy = (accuracy + kept_accuracy) / 2
           general_f1 = (rank_f1_score + keep_f1_score) / 2
@@ -398,7 +439,7 @@ def training_loop():
     epoch_keep_avg_recall = sum(epoch_keep_recall_scores) / len(epoch_keep_recall_scores) if epoch_keep_recall_scores else 0.0
     epoch_keep_avg_specificity = sum(epoch_keep_specificity_scores) / len(epoch_keep_specificity_scores) if epoch_keep_specificity_scores else 0.0
 
-    thread_metrics = {
+    thread_metrics = {  
     "percentage_long_pruned" : (num_long_threads - num_long_pruned) / total_threads, # percentage kept relative to pruned for long threads
     "percentage_lone_pruned" : (num_lone_threads - num_lone_pruned) / total_threads, # percentage kept relative to prune for lone threads 
     "percentage_long_threads" : (num_long_threads / total_threads), # percentage of long threads relative to the entire dataset

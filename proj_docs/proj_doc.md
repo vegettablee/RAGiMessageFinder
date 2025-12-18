@@ -430,4 +430,9 @@ New Loss Functions to Try :
 Steps to try during training : 
 - Start with teacher forcing top-k at the very beginning, then, on EPOCH 15, switch so that the model starts choosing top-k based on sigmoid activations, and then grade the loss from there. 
 
+# Results of Dual Head Architecture
+
+
+It was significantly more difficult to train, I could not get the ranking head and the keep head to really align. The model kept on either choosing one node every single time, or 
+
 

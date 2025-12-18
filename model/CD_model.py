@@ -36,7 +36,7 @@ class CDModel(nn.Module):
         self.fc2 = nn.Linear(hidden_dim2, hidden_dim3)
 
         # Two output heads (multi-head architecture)
-        self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
+       # self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
         self.output_layer_keep = nn.Linear(hidden_dim3, 1)    # Keep/discard prediction, might use later, likely not 
 
         # Dropout for regularization
@@ -60,14 +60,10 @@ class CDModel(nn.Module):
         x = F.relu(x)
         x = self.dropout(x)
 
-        # Layer 3
-        x = self.fc3(x)
-        x = F.relu(x)
-        x = self.dropout(x)  # Shape: [B, N, 64]
-
         # Two output heads
-        thread_logits = self.output_layer_thread(x).squeeze(-1)  # Shape: [B, N]
+       # thread_logits = self.output_layer_thread(x).squeeze(-1)  # Shape: [B, N]
         keep_logits = self.output_layer_keep(x).squeeze(-1)      # Shape: [B, N]
+        thread_logits = keep_logits # placeholder so this still runs 
 
         return thread_logits, keep_logits
 
@@ -88,7 +84,6 @@ class CDModel(nn.Module):
             },
             'hidden_dim1': self.hidden_dim1,
             'hidden_dim2': self.hidden_dim2,
-            'hidden_dim3': self.hidden_dim3,
             'output_heads': {
                 'thread_prediction': 1,
                 'keep_discard_prediction': 1
