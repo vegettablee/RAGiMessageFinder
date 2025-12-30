@@ -430,9 +430,30 @@ New Loss Functions to Try :
 Steps to try during training : 
 - Start with teacher forcing top-k at the very beginning, then, on EPOCH 15, switch so that the model starts choosing top-k based on sigmoid activations, and then grade the loss from there. 
 
-# Results of Dual Head Architecture
+# Results after more heavy experimentation 
 
+I tried multiple approaches because the results very mediocre. 
 
-It was significantly more difficult to train, I could not get the ranking head and the keep head to really align. The model kept on either choosing one node every single time, or 
+Approaches tried : 
+- use same logits for sigmoid and ranking, I chose this mainly because whenever sigmoid classification is done, it naturally follows a distribution where it ranks, but this proved to just be a bottleneck later 
+- reduced the dimensions of the model hoping it would generalize/train faster, did not work 
+- absolute positional encoding, worked well at first, but then the model developed positional bias, it kept choosing everything that was closer to the root node 
+- multiple temperature values, sigmoid thresolds, and rank head and keep head weights, it either resulted in the model overchoosing everything, or just choosing the root node instead 
+
+Current Approaches : 
+- using a prefix style training, so whenever the model is trying to guess a correct thread for a whole conversation like : 
+- relative encoding, encoding relative cposition from the seed rather a learned vector representation for each position in the sequence 
+
+[1,2,3,4,8,10] this is the whole conversation, correct thread is [1,3,4,8] 
+
+instead of just guessing the correct thread and then moving on, once it guesses for the first time, try to guess from the next node, for example : 
+
+model tries to guess [1,3,4,8] on first iteration
+model tries to guess [3,4,8] on second iteration 
+and stops guessing once there are two nodes left, this is done to prevent the model from overchoosing 
+
+So far, the results have been significantly better, as the model now does not have nearly as much positional bias, and is not as afraid to make predictions that are further away from the root node. 
+
+More training is required, then the RAG system can actually start being implemented. 
 
 

@@ -17,33 +17,50 @@ import torch.nn.functional as F
 
 class CDModel(nn.Module):
 
-    def __init__(self, input_dim=768, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, dropout_rate=0.2):
+    def __init__(self, input_dim=768, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, dropout_rate=0.2,
+                 num_speakers=15, speaker_embed_dim=16):
         super(CDModel, self).__init__()
 
         # Store hyperparameters
-        
         self.input_dim = input_dim
-        
-        self.hidden_dim1 = hidden_dim2
-        self.hidden_dim2 = hidden_dim3
+        self.speaker_embed_dim = speaker_embed_dim
+        self.num_speakers = num_speakers
+
+        self.hidden_dim1 = hidden_dim1
+        self.hidden_dim2 = hidden_dim2
+        self.hidden_dim3 = hidden_dim3
 
         self.dropout_rate = dropout_rate
 
-        self.attn = nn.MultiheadAttention(embed_dim=input_dim, num_heads=4, batch_first=True)
+        # Speaker embedding layer
+        self.speaker_embedding = nn.Embedding(num_speakers, speaker_embed_dim)
+
+        # Combined dimension after concatenating speaker embeddings
+        combined_dim = input_dim + speaker_embed_dim
+
+        self.attn = nn.MultiheadAttention(embed_dim=combined_dim, num_heads=4, batch_first=True)
 
         # Define shared backbone layers
-        self.fc1 = nn.Linear(input_dim, hidden_dim2)
-        self.fc2 = nn.Linear(hidden_dim2, hidden_dim3)
+        self.fc1 = nn.Linear(combined_dim, hidden_dim1)
+        self.fc2 = nn.Linear(hidden_dim1, hidden_dim2)
+        self.fc3 = nn.Linear(hidden_dim2, hidden_dim3)
 
         # Two output heads (multi-head architecture)
-       # self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
+        self.output_layer_thread = nn.Linear(hidden_dim3, 1)  # Thread membership prediction
         self.output_layer_keep = nn.Linear(hidden_dim3, 1)    # Keep/discard prediction, might use later, likely not 
 
         # Dropout for regularization
         self.dropout = nn.Dropout(p=dropout_rate)
 
-    def forward(self, x):
+    def forward(self, x, speaker_ids):
         # x shape: [batch_size, num_candidates, input_dim]
+        # speaker_ids shape: [batch_size, num_candidates]
+
+        # Get speaker embeddings
+        speaker_embeds = self.speaker_embedding(speaker_ids)  # [B, N, speaker_embed_dim]
+
+        # Concatenate message embeddings with speaker embeddings
+        x = torch.cat([x, speaker_embeds], dim=-1)  # [B, N, input_dim + speaker_embed_dim]
 
         # Self-attention layer
         attn_output, _ = self.attn(x, x, x)  # Query, Key, Value all from same input
@@ -60,10 +77,15 @@ class CDModel(nn.Module):
         x = F.relu(x)
         x = self.dropout(x)
 
+        # Layer 3
+        x = self.fc3(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+
         # Two output heads
-       # thread_logits = self.output_layer_thread(x).squeeze(-1)  # Shape: [B, N]
+        # thread_logits = self.output_layer_thread(x).squeeze(-1)  # Shape: [B, N]
         keep_logits = self.output_layer_keep(x).squeeze(-1)      # Shape: [B, N]
-        thread_logits = keep_logits # placeholder so this still runs 
+        thread_logits = self.output_layer_thread(x).squeeze(-1) # placeholder so this still runs
 
         return thread_logits, keep_logits
 
@@ -76,14 +98,20 @@ class CDModel(nn.Module):
             dict: Model configuration parameters
         """
         config = {
-            'architecture': 'CDModel (Multi-head + Self-Attention)',
+            'architecture': 'CDModel (Multi-head + Self-Attention + Speaker Embeddings)',
             'input_dim': self.input_dim,
+            'speaker_embeddings': {
+                'num_speakers': self.num_speakers,
+                'speaker_embed_dim': self.speaker_embed_dim
+            },
+            'combined_dim': self.input_dim + self.speaker_embed_dim,
             'attention': {
                 'num_heads': 4,
-                'embed_dim': self.input_dim
+                'embed_dim': self.input_dim + self.speaker_embed_dim
             },
             'hidden_dim1': self.hidden_dim1,
             'hidden_dim2': self.hidden_dim2,
+            'hidden_dim3': self.hidden_dim3,
             'output_heads': {
                 'thread_prediction': 1,
                 'keep_discard_prediction': 1

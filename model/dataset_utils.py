@@ -140,6 +140,26 @@ def get_example():
 
   return random.choice(_dataset_cache)
 
+def get_speaker_ids(messages) -> list: 
+  all_tokens = [message.split(" ") for message in messages]
+  raw_speakers = [] 
+  for t_idx, tokens in enumerate(all_tokens): 
+    current_speaker = tokens[1]
+    raw_speakers.append(current_speaker) 
+  
+  seen_speakers = {}
+  speaker_count = 0
+  ordered = [] * len(messages) 
+  for speaker in raw_speakers: 
+    if speaker in seen_speakers: 
+      id = seen_speakers[speaker]
+      ordered.append(id) 
+    else: 
+      seen_speakers[speaker] = speaker_count
+      ordered.append(speaker_count)
+      speaker_count += 1
+
+  return ordered
 
 
 example = {
@@ -204,3 +224,4 @@ example = {
         [11]        # Node 12: eve replies to bob (Node 11)
     ]
 }
+
