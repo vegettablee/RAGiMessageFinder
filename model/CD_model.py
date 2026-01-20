@@ -18,7 +18,7 @@ import torch.nn.functional as F
 class CDModel(nn.Module):
 
     def __init__(self, input_dim=768, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, dropout_rate=0.2,
-                 num_speakers=15, speaker_embed_dim=16):
+                 num_speakers=15, speaker_embed_dim=8):
         super(CDModel, self).__init__()
 
         # Store hyperparameters
@@ -33,7 +33,7 @@ class CDModel(nn.Module):
         self.dropout_rate = dropout_rate
 
         # Speaker embedding layer
-        self.speaker_embedding = nn.Embedding(num_speakers, speaker_embed_dim)
+        self.speaker_embedding = nn.Embedding(num_speakers, speaker_embed_dim, padding_idx=0) # because we are padding 
 
         # Combined dimension after concatenating speaker embeddings
         combined_dim = input_dim + speaker_embed_dim
@@ -58,6 +58,9 @@ class CDModel(nn.Module):
 
         # Get speaker embeddings
         speaker_embeds = self.speaker_embedding(speaker_ids)  # [B, N, speaker_embed_dim]
+
+        # Apply dropout to speaker embeddings to reduce reliance on speaker info
+        speaker_embeds = F.dropout(speaker_embeds, p=0.5, training=self.training)
 
         # Concatenate message embeddings with speaker embeddings
         x = torch.cat([x, speaker_embeds], dim=-1)  # [B, N, input_dim + speaker_embed_dim]

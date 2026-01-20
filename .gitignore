@@ -11,3 +11,6 @@ DS_Store
 .DS_Store
 checkpoints
 results.json
+.chainlit/translations/it.json
+backend/data/raw/chat.db
+CLAUDE.md

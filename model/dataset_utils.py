@@ -148,7 +148,7 @@ def get_speaker_ids(messages) -> list:
     raw_speakers.append(current_speaker) 
   
   seen_speakers = {}
-  speaker_count = 0
+  speaker_count = 1
   ordered = [] * len(messages) 
   for speaker in raw_speakers: 
     if speaker in seen_speakers: 
@@ -158,7 +158,6 @@ def get_speaker_ids(messages) -> list:
       seen_speakers[speaker] = speaker_count
       ordered.append(speaker_count)
       speaker_count += 1
-
   return ordered
 
 

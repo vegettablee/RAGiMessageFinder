@@ -1,15 +1,14 @@
 # this file orchestrates the chunking algorithm by connecting all refactored modules
 
-from sentence_transformers import SentenceTransformer, SimilarityFunction
-from data.processing.test_data import message_chunks
-from chunk_algorithm.topic_shift import compute_topic_shifts
-from chunk_algorithm.micro_thread import compute_microthreads
-from chunk_algorithm.remainder import append_remainders
+from backend.data.processing.test_data import message_chunks
+from backend.chunk_algorithm.topic_shift import compute_topic_shifts
+from backend.chunk_algorithm.micro_thread import compute_microthreads
+from backend.chunk_algorithm.remainder import append_remainders
 
 MAX_SECION_TIME = 30 # max amount of time two texts must stay within
 LINE_BURST_TIME = 5 # max amount of time for line bursts
 
-def chunk_messages(messages=list, model=None): # pass in embedding model for similarity
+def chunk_messages(messages=list, model=None) -> list[list]: # pass in embedding model for similarity
   # messages is a list in the format :
   # ('2024-10-08 01:31:13', '', '', 'OOUU it's so fun seeing how other people edit stuff', '+19365539666')
 
@@ -34,24 +33,25 @@ def chunk_messages(messages=list, model=None): # pass in embedding model for sim
 
   # Step 3: Process each adjacent burst pair completely (microthreads + remainders)
   # Note: Process ONE pair at a time, not accumulate all then process
-  all_final_threads = []
+ # all_final_threads = []
 
-  for i in range(len(all_bursts) - 1):  # iterate through adjacent burst pairs
-    valid_threads, remainders = compute_microthreads(all_bursts[i], all_bursts[i + 1], model)
+  # for i in range(len(all_bursts) - 1):  # iterate through adjacent burst pairs
+    #valid_threads, remainders = compute_microthreads(all_bursts[i], all_bursts[i + 1], model)
 
     # Immediately append remainders for this burst pair
-    final_threads = append_remainders(valid_threads, remainders, model)
-    all_final_threads.extend(final_threads)
+   # final_threads = append_remainders(valid_threads, remainders, model)
+    #all_final_threads.extend(final_threads)
 
-  return all_final_threads
-
+  return all_bursts
 
 # Main execution: initialize model and run tests
 if __name__ == "__main__":
-  embedder = SentenceTransformer("all-MiniLM-L6-v2", similarity_fn_name=SimilarityFunction.COSINE)
-  counter = 0 
+  from backend.rag.embedder import get_chunking_embedder
+
+  embedder = get_chunking_embedder()
+  counter = 0
   for message_chunk in message_chunks:
-    if counter == 2: 
+    if counter == 2:
       break
     print("\n" + "="*80)
     print("Processing new message chunk...")

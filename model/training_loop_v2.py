@@ -23,7 +23,7 @@ SAVE_MODEL = False
 MAX_MESSAGES_PER_EXAMPLE = 20 # limit conversation length for faster training
 NUM_EXAMPLES = 100000 # number of examples to load, but not necessarily use 
 TEACHER_FORCE = True # when false, let the model choose freely
-PRUNE_SELF_NODES_PROB = 0.75 # only keep 25 percent of nodes who do not have any connections 
+PRUNE_SELF_NODES_PROB = 1 # only keep 25 percent of nodes who do not have any connections 
 PRUNE_LONG_NODES_PROB = 1.1 # cut all examples with thread length > 8 
 PRUNE_LONG_NODE_LEN = 7 # max node length to keep 
 INCLUDE_LAST_EXAMPLE = False # if last example is a lone-node, skip it to see pure accuracy 
@@ -208,15 +208,21 @@ def training_loop():
               num_threads_skipped += 1
               #print("skipped last lone thread : " + str(correct_thread))
               break
-          for i_idx, i in enumerate(correct_thread): 
-            if i_idx == len(correct_thread) - 2: # break when we reach the last node, don't over train on singular nodes 
+          for i_idx, i in enumerate(correct_thread):
+            if i_idx == len(correct_thread) - 2 and len(correct_thread) > 2: # break when we reach the last node, don't over train on singular nodes
               remaining_nodes.remove(i)
               remaining_nodes.remove(correct_thread[i_idx + 1])
               break
-            
+
             # emb the entire conversation into one embedding as an input feature for the model
             # correct_thread is a tuple like (1, 1) or (2, 1), convert to 0-indexed
             rest_correct = correct_thread[i_idx:]
+
+            # Skip training on lone nodes created by prefix iteration
+            if len(rest_correct) == 1:
+              remaining_nodes.remove(i)
+              continue
+
             current_messages = []
             filtered_nodes = []  # Track which nodes we're actually using
             root_node = i # only use messages above this root node
@@ -226,6 +232,33 @@ def training_loop():
                 filtered_nodes.append(node_id)
 
             speaker_ids = get_speaker_ids(current_messages)
+            # print(speaker_ids)
+            seen_speakers = set() 
+            speaker_counters = {} # dictionary in the form of { speaker : counter } where counter is the number of times a speaker has spoken
+            speaker_indices = {} 
+            masked_speaker_ids = [] 
+            num_repeats = 0 
+            for speaker_idx, speaker in enumerate(speaker_ids): 
+              if speaker in seen_speakers: 
+                speaker_counters[speaker] += 1
+                speaker_indices[speaker].append(speaker_idx) 
+                num_repeats += 1
+              else: 
+                speaker_counters[speaker] = 1 # initialize to one 
+                speaker_indices[speaker] = [speaker_idx]
+                seen_speakers.add(speaker) 
+            num_masks = int(num_repeats * 0.70) # mask 50 percent of repeated speakers 
+            all_repeat_indices = []
+            for speaker, indices in speaker_indices.items(): 
+              if len(indices) > 1: 
+                all_repeat_indices.extend(indices[1:])
+
+            masked_indices = random.sample(all_repeat_indices, min(num_masks, len(all_repeat_indices)))
+            for idx in masked_indices: 
+              speaker_ids[idx] = 0 # mask certain speakers, excluding the first occurence of the first speaker, use a sentinel value 
+              
+            # print(speaker_ids)
+
             speakers_tensor = torch.tensor(speaker_ids).unsqueeze(dim=0)
             
             messages_emb = model.encode(current_messages)

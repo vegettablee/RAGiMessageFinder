@@ -1,10 +1,10 @@
-# this file takes the messages from message_loader and puts them into txt file to embed, also returns all the text 
+# this file takes the messages from message_loader and puts them into txt file to embed, also returns all the text
 
-import message_loader
-import os 
-import sys 
-from display.format import formatMyMessage, formatSenderMessage
-from chunk_algorithm.chunking import chunk_messages
+from backend.data.processing import message_loader
+import os
+import sys
+from backend.display.format import formatMyMessage, formatSenderMessage
+from backend.chunk_algorithm.chunking import chunk_messages
 
 processing_path = os.getcwd() 
 print(processing_path)

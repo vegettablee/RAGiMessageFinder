@@ -2,11 +2,65 @@ import sqlite3
 import os
 from typing import Optional
 
-DB_ABS_PATH = "/Users/prestonrank/RAGMessages/data/raw/chat.db"
-conn = sqlite3.connect(DB_ABS_PATH)
+DB_ABS_PATH = "/Users/prestonrank/RAGMessages/backend/data/raw/chat.db"
+
+def _get_connection():
+    """Lazy database connection - only connects when needed."""
+    return sqlite3.connect(DB_ABS_PATH)
 
 def _normalize_digits(s: str) -> str:
     return "".join(ch for ch in s if ch.isdigit())
+
+def getMessageCountBySubject(subject: str) -> int:
+    """
+    Efficiently count total messages with a contact without fetching them all.
+
+    Args:
+        subject: Phone number or name to search for
+
+    Returns:
+        int: Total number of messages with this contact
+    """
+    conn = _get_connection()
+    c = conn.cursor()
+
+    like_text = f"%{subject}%"
+    digits = _normalize_digits(subject)
+    ten = digits[-10:] if len(digits) >= 10 else digits
+    like_10 = f"%{ten}%" if ten else ""
+    like_11 = f"%1{ten}%" if ten else ""
+
+    query = f"""
+    WITH target_chats AS (
+      SELECT DISTINCT c.ROWID AS chat_id
+      FROM chat c
+      LEFT JOIN chat_handle_join chj ON chj.chat_id = c.ROWID
+      LEFT JOIN handle h ON h.ROWID = chj.handle_id
+      WHERE
+        IFNULL(h.id,'') LIKE ? COLLATE NOCASE
+        OR IFNULL(c.display_name,'') LIKE ? COLLATE NOCASE
+        OR IFNULL(c.chat_identifier,'') LIKE ? COLLATE NOCASE
+        OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(h.id,''), ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
+        OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(c.chat_identifier,''), ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
+        {"OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(h.id,''), ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ? OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(c.chat_identifier,''), ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?" if ten else ""}
+    )
+    SELECT COUNT(*) as total
+    FROM message m
+    JOIN chat_message_join cmj ON cmj.message_id = m.ROWID
+    JOIN target_chats tc ON tc.chat_id = cmj.chat_id
+    WHERE
+      NOT EXISTS (SELECT 1 FROM message_attachment_join maj WHERE maj.message_id = m.ROWID)
+      AND IFNULL(m.associated_message_type, 0) = 0;
+    """
+
+    params = [like_text, like_text, like_text, like_10, like_10]
+    if ten:
+        params.extend([like_11, like_11])
+
+    result = c.execute(query, tuple(params)).fetchone()
+    conn.close()
+
+    return result[0] if result else 0
 
 def _subject_e164ish(subject: str) -> str:
     d = _normalize_digits(subject)
@@ -85,6 +139,7 @@ def getMessagesBySubject(subject: str, numberOfMessages: int):
     - Grabs latest N, outputs in chronological order.
     - Outgoing bodies are recovered from attributedBody when text is NULL.
     """
+    conn = _get_connection()
     c = conn.cursor()
 
     like_text = f"%{subject}%"

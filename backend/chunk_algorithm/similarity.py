@@ -18,10 +18,10 @@ def compute_burst_similarity(burst1, burst2, model, burst1_idx, burst2_idx):
   similarity = F.cosine_similarity(first_emb.unsqueeze(0), second_emb.unsqueeze(0))
 
   if similarity.item() > BURST_SIMILARITY_THRESHOLD:
-    print(f"Bursts {burst1_idx} and {burst2_idx} are similar, keeping them together. Score {similarity.item()}")
+   #  print(f"Bursts {burst1_idx} and {burst2_idx} are similar, keeping them together. Score {similarity.item()}")
     return True
   else:
-    print(f"Bursts {burst1_idx} and {burst2_idx} are not similar, keeping them separate. Score {similarity.item()}")
+   #  print(f"Bursts {burst1_idx} and {burst2_idx} are not similar, keeping them separate. Score {similarity.item()}")
     return False
 
 

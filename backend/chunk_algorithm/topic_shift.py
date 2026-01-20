@@ -1,8 +1,8 @@
 # this file holds the part of the algorithm responsible for the higher-level chunking, mostly for topic shifts
 
 from datetime import datetime
-from display.display import display_validated_chunks, display_conversation_sections
-from chunk_algorithm.similarity import compute_burst_similarity, compute_text_similarity
+from backend.display.display import display_validated_chunks, display_conversation_sections
+from backend.chunk_algorithm.similarity import compute_burst_similarity, compute_text_similarity
 
 MAX_SECION_TIME = 30  # max amount of time two texts must stay within
 LINE_BURST_TIME = 5   # max amount of time for line bursts

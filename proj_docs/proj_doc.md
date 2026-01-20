@@ -457,3 +457,28 @@ So far, the results have been significantly better, as the model now does not ha
 More training is required, then the RAG system can actually start being implemented. 
 
 
+# User-facing Analytics for iMessage data 
+
+Right now, at this stage, I need to think clearly about the system that I want to build, funneling the macOS data messages in order to get the maximum flexibility in terms of the analytics I can derive. If this is not planned correctly, this application loses a lot of its value, because even though it's mainly a query system, being able to see stats about your messages would also be amazing. 
+
+Current stage in the data-processing pipeline after a contact has been set: 
+- Function to get x amount of messages based on the contact 
+- Function to get the num of messages based on the contact 
+- Function to format messages 
+
+What would interesting to view? 
+- Obviously the number of messages with a contact 
+- Activity with a person over time, histogram with 4 month increments based on the number of messages within that period 
+- Conversation initiations, if a time gap like 5 days has exceeded, who is the first to usually message? 
+- Response time speed, within current conversations not having a big time gap, what was the time in between replies? 
+- Time of day, were most messages during the morning, afternoon, evening, midnight? 
+
+For this kind of system, we need separate processing layers when processing individual messages and batches of messages 
+
+- Orchestrator
+ ├─ Raw ingestion
+ ├─ Normalization
+ ├─ Time analytics
+ └─ Threading / RAG
+
+
