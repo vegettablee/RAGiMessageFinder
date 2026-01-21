@@ -10,25 +10,13 @@ from backend.rag.input_validation import handle_contact_input
 from session_state import get_session_state, get_data_state
 from contacts import update_settings
 from backend.rag.rag import initialize_embedding_model, create_query_vector, initialize_rag_pipeline
-from backend.rag.router import route_contact
+from backend.rag.router import route_contact, multi_query_translation
 
 # Placeholder functions - implement your RAG logic here
 subject_phone = "9365539666"
 subject_name = "Paris"
 
 async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
-    """
-    Query your RAG pipeline with the user's question.
-
-    Args:
-        qa_chain: Dict with initialized components (embedder, llm, dimension)
-        user_query: The user's question as a string
-        selected_contacts: List of contact dicts with 'name' and 'phone' keys
-
-    Returns:
-        dict: Should contain 'result' and 'source_documents'
-    """
-
     try:
         # Extract components from qa_chain
         embedder = qa_chain['embedder']
@@ -36,18 +24,22 @@ async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
         dimension = qa_chain['dimension']
 
         # Route query to selected contacts and retrieve relevant threads
-        doc_results = route_contact(selected_contacts, user_query)
-
+        q = multi_query_translation(user_query)
+        queries = q[1]
+        category = q[0]
+        all_results = []
         # Format retrieved threads as context for LLM
         context_text = ""
         source_documents = []
 
+
         for contact in selected_contacts:
             contact_phone = contact['phone']
             contact_name = contact['name']
-
-            if contact_phone in doc_results:
-                retrieved_threads, message_lookup = doc_results[contact_phone]
+            for query in queries:    
+                doc_results = route_contact(selected_contacts, query)
+                if contact_phone in doc_results:
+                    retrieved_threads, message_lookup = doc_results[contact_phone]
 
                 if retrieved_threads:
                     context_text += f"\n\n=== Conversations with {contact_name} ===\n"
@@ -112,6 +104,9 @@ Please let the user know that no relevant messages were found."""
 
 @cl.on_chat_start
 async def start():
+    # Check if this is first session initialization
+    is_first_session = cl.user_session.get("state") is None
+
     # Get or create session state
     state = get_session_state()
     data_state = get_data_state()
@@ -123,27 +118,21 @@ async def start():
     # Use update_settings() so settings refresh dynamically when contacts are added
     await update_settings()
 
-    # Create custom analytics button element
-    analytics_button = cl.CustomElement(
-        name="AnalyticsButton",
-        props={},
-        display="inline"
-    )
+    # Only show welcome message on first session
+    if is_first_session:
+        # Create custom analytics button element
+        analytics_button = cl.CustomElement(
+            name="AnalyticsButton",
+            props={},
+            display="inline"
+        )
 
-    welcome_message = """
-# RAGMessages - iMessage Conversation Search
+        welcome_message = """**ThreadFinder** - iMessage query system for your iMessage conversations.
 
-Welcome! This is the front-end interface for searching your iMessage conversations.
-
-**Current Status**: 🚧 Pipeline in development
-
-**To Get Started**:
-- Click the **⚙️ Settings icon** in the sidebar to add a contact
-- Use the **Analytics button** below to view message analytics
-
-Once you add contacts, check the boxes next to the ones you want to query, then start asking questions!
-    """
-    await cl.Message(content=welcome_message, elements=[analytics_button]).send()
+Add a contact via Settings to get started. Use `/analytics` for conversation insights.
+        """
+        await cl.Message(content=welcome_message).send()
+        # change this to be shown on command 
 
 
 @cl.on_message

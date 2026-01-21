@@ -17,22 +17,14 @@ from langchain_core.documents import Document
 from backend.rag.embedder import get_rag_embedder
 
 import sys
-import os
+import os 
 
 subject_phone = "9365539666"
 subject_name = "Paris"
 
 
 async def initialize_rag_pipeline():
-    """
-    Initialize your RAG components here:
-    - Initialize embedding model
-    - Initialize LLM
-    Note: No data is loaded here. Data loading happens when user selects contacts.
-    Returns:
-        qa_chain: Dict with initialized components (embedder, llm)
-    """
-    # Get shared embedding model instance (loaded only once)
+    # load qachain for queries, don't load any databases, this only happens when a contact is added and verified 
     embedder = get_rag_embedder()
     dimension = 384  # dim-size for multi-qa-MiniLM-L6-cos-v1
 

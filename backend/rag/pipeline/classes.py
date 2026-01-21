@@ -4,8 +4,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
+from pydantic import BaseModel, Field
+from typing import List, Literal
 
-# main orchestrator class per contact 
+class MultiQueryOutput(BaseModel):
+  category: Literal["Temporal", "Information-Retrieval", "Creative"]
+  queries: List[str] = Field(min_items=5, max_items=5)
 
 @dataclass
 class DataState:

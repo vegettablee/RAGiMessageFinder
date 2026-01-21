@@ -3,12 +3,13 @@ import faiss
 import numpy as np
 from chainlit_app.session_state import get_data_state
 from backend.rag.embedder import get_rag_embedder
-
+from backend.rag.pipeline.classes import MultiQueryOutput
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_openai import ChatOpenAI
 # Get shared embedder instance (loaded only once)
 embedder = get_rag_embedder()
 
 top_k = 5  # number of documents to return per result
-
 
 def route_contact(selected_contacts: list, query: str):
   """
@@ -110,3 +111,64 @@ def query_contact(query: str, k: int = 5, faiss_index=None, threads=None, messag
       import traceback
       traceback.print_exc()
       return [], message_lookup
+
+def multi_query_translation(query : str) -> list[str]: 
+    # be able to sort by time 
+    query_categories = ["Temporal", "Information-Retrieval", "Creative"]
+    print("User query : ", query)
+    # for sentiment analysis along with 
+    # goals for prompt, classify in 4 categories with boundaries for each one 
+    # for temporal queries, try different time translations that mean the same thing 
+    # for information retrieval, like about an event, try different translations but be as direct as possible 
+    # for queries not pertaining to either category, come up with different translations that are creative 
+    # 5 different queries will be created
+    # there will be one field called "category" where it will contain one of the three categories
+    # and then there will be another field called "queries" where it is linked to an array of strings 
+    
+    # i want the json in the form of an array with every 
+    template = f"""
+You are a query translator for a RAG system built on iMessage conversational data.
+
+Your task: Generate 5 semantically equivalent variations of the user's query below.
+
+CLASSIFICATION RULES:
+- "Temporal": Query asks WHEN something happened (e.g., "When did...", "Last time...", "Recent...")
+- "Information-Retrieval": Query seeks specific facts, people, or things (e.g., "Who...", "What is...", "Find...")
+- "Creative": Query is open-ended, exploratory, or opinion-based (e.g., "Why...", "How can I...", "What are good...")
+
+GENERATION RULES:
+1. Keep the SAME entities (people, places, things mentioned)
+2. Keep the SAME intent and time frame
+3. Only vary the phrasing/wording and/or pronouns if they are semantically similar.
+4. Goal: Maximize retrieval coverage by using different phrasings that might match different ways the information appears in messages
+
+USER QUERY: "{query}"
+
+Return ONLY valid JSON in this exact format:
+{{{{
+  "category": "<Temporal | Information-Retrieval | Creative>",
+  "queries": [
+    "<variation 1>",
+    "<variation 2>",
+    "<variation 3>",
+    "<variation 4>",
+    "<variation 5>"
+  ]
+}}}}
+"""
+
+    parser = PydanticOutputParser(pydantic_object=MultiQueryOutput)
+    format_instructions = parser.get_format_instructions()
+    llm = ChatOpenAI(temperature=0)
+
+    response = llm.invoke(template)
+
+    print(response.content)
+
+    parsed = parser.parse(response.content)
+
+    category = parsed.category   # "Temporal"
+    queries = parsed.queries
+
+
+    return category, queries 
