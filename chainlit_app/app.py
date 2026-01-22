@@ -11,10 +11,12 @@ from session_state import get_session_state, get_data_state
 from contacts import update_settings
 from backend.rag.rag import initialize_embedding_model, create_query_vector, initialize_rag_pipeline
 from backend.rag.router import route_contact, multi_query_translation
+from commands import is_command, handle_command, show_analytics_selector 
 
 # Placeholder functions - implement your RAG logic here
 subject_phone = "9365539666"
 subject_name = "Paris"
+
 
 async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
     try:
@@ -32,7 +34,7 @@ async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
         context_text = ""
         source_documents = []
 
-
+        
         for contact in selected_contacts:
             contact_phone = contact['phone']
             contact_name = contact['name']
@@ -141,10 +143,30 @@ async def main(message: cl.Message):
     # Get session state
     state = get_session_state()
 
-    # Check which contacts are selected
+    # Check if message is a command
+    if is_command(message.content):
+        if message.content.strip().startswith("/analytics"):
+            # Check which contacts are selected
+            if not state.selected_contacts:
+                await cl.Message(
+                    content="**No contacts selected.**\n\nPlease go to Settings and select at least one contact first."
+                ).send()
+                return
+
+            # Build list of selected contact dicts
+            selected_contact_dicts = [c for c in state.contacts if c['phone'] in state.selected_contacts]
+
+            # Show analytics selector
+            await show_analytics_selector(selected_contact_dicts)
+            return
+        else:
+            await cl.Message(content=f"Unknown command: {message.content}").send()
+            return
+
+    # Check which contacts are selected for regular queries
     if not state.selected_contacts:
         await cl.Message(
-            content="⚠️ **No contacts selected.**\n\nPlease go to ⚙️ Settings and check the box next to at least one contact to query."
+            content="**No contacts selected.**\n\nPlease go to Settings and check the box next to at least one contact to query."
         ).send()
         return
 
@@ -178,7 +200,7 @@ async def main(message: cl.Message):
             if content:  # Only add if content exists
                 source_elements.append(
                     cl.Text(
-                        name=f"📱 {contact_name} - Thread {i+1}",
+                        name=f"{contact_name} - Thread {i+1}",
                         content=content,
                         display="inline"  # Changed from "side" to "inline"
                     )
@@ -186,9 +208,9 @@ async def main(message: cl.Message):
 
         if source_elements:
             await cl.Message(
-                content=f"📋 **Source Conversations:** ({len(source_elements)} threads found)",
+                content=f"**Source Conversations:** ({len(source_elements)} threads found)",
                 elements=source_elements
             ).send()
         else:
             print("DEBUG: No source elements to display (all content was empty)")
-            await cl.Message(content="📋 No source conversations found with content.").send()
+            await cl.Message(content="No source conversations found with content.").send()
