@@ -239,32 +239,51 @@ chainlit run app.py
 
 ```
 RAGMessages/
-├── data/
-│   ├── processing/
-│   │   ├── message_loader.py      # SQLite database interface
-│   │   ├── file.py                # Message formatting utilities
-│   │   └── test_data.py           # Sample conversation data
-│   └── raw/
-│       └── chat.db                # macOS iMessage database
+├── backend/
+│   ├── chunk_algorithm/
+│   │   ├── chunking.py            # Main orchestrator
+│   │   ├── topic_shift.py         # Stage 1: Time-based segmentation
+│   │   ├── micro_thread.py        # Stage 2: ML-powered thread extraction
+│   │   ├── remainder.py           # Stage 3: Orphan assignment
+│   │   └── similarity.py          # Embedding similarity utilities
+│   ├── data/
+│   │   └── processing/
+│   │       ├── message_loader.py  # SQLite database interface
+│   │       ├── file.py            # Message formatting utilities
+│   │       └── test_data.py       # Sample conversation data
+│   ├── display/
+│   │   ├── display.py             # Display utilities
+│   │   └── format.py              # Formatting utilities
+│   └── rag/
+│       ├── rag.py                 # FAISS indexing and retrieval
+│       ├── add_contact.py         # Contact management
+│       ├── embedder.py            # Embedding model utilities
+│       ├── router.py              # Query routing and multi-query translation
+│       ├── input_validation.py    # Input validation
+│       └── pipeline/
+│           ├── pipeline.py        # RAG pipeline orchestration
+│           ├── faiss.py           # FAISS index management
+│           └── classes.py         # Data classes
 │
-├── chunk_algorithm/
-│   ├── chunking.py                # Main orchestrator
-│   ├── topic_shift.py             # Stage 1: Time-based segmentation
-│   ├── micro_thread.py            # Stage 2: ML-powered thread extraction
-│   ├── remainder.py               # Stage 3: Orphan assignment
-│   └── similarity.py              # Embedding similarity utilities
-│
-├── rag/
-│   ├── rag.py                     # FAISS indexing and retrieval
+├── chainlit_app/
 │   ├── app.py                     # Chainlit UI
-│   └── main.ipynb                 # Experimental notebook
+│   ├── contacts.py                # Contact settings UI
+│   ├── commands.py                # Command handlers
+│   ├── session_state.py           # Session state management
+│   └── public/
+│       ├── theme.json             # UI theme configuration
+│       └── elements/
+│           ├── ThreadDisplay.jsx  # Thread display component
+│           └── AnalyticsButton.jsx # Analytics button component
 │
 ├── model/
 │   ├── CD_model.py                # Neural network architecture
 │   ├── training_loop.py           # Training logic with teacher forcing
 │   ├── loss_function.py           # ListNetLoss implementation
 │   ├── dataset_utils.py           # IRC dataset loading
-│   └── construct_tree.py          # Message tree construction
+│   ├── construct_tree.py          # Message tree construction
+│   └── dataset/
+│       └── irc-disentanglement/   # IRC dataset
 │
 └── proj_docs/
     ├── proj_doc.md                # Development history
