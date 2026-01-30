@@ -12,11 +12,11 @@ This project enables natural language search through your iMessage history by ch
   <table>
     <tr>
       <td align="center">
-        <b>Query Demo</b><br/>
+        <b>Query Demo</b><br/><br/>
         <img src="rag_demo.gif" width="400" alt="RAG Query Demo"/>
       </td>
       <td align="center">
-        <b>Adding a Contact</b><br/>
+        <b>Adding a Contact</b><br/><br/>
         <img src="contact_preview.png" width="600" alt="Contact Add Preview"/>
       </td>
     </tr>
