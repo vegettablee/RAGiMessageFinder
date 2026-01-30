@@ -27,9 +27,9 @@ This project enables natural language search through your iMessage history by ch
 
 ## Table of Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Architecture](#️-architecture)
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
   - [Conversation Chunking Algorithm](#conversation-chunking-algorithm)
   - [Contact-Based Partitioning](#contact-based-partitioning)
   - [Application Flow](#application-flow)
