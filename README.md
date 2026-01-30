@@ -2,7 +2,7 @@
 
 Unlock the hidden knowledge buried in your messages with semantic search that lets you query, analyze, and explore your conversations like never before.
 
----
+
 
 ## Project Introduction
 
@@ -13,23 +13,23 @@ This project enables natural language search through your iMessage history by ch
     <tr>
       <td align="center">
         <b>Query Demo</b><br/>
-        <img src="rag_demo.gif" width="550" alt="RAG Query Demo"/>
+        <img src="rag_demo.gif" width="500" alt="RAG Query Demo"/>
       </td>
       <td align="center">
         <b>Adding a Contact</b><br/>
-        <img src="contact_preview.png" width="550" alt="Contact Add Preview"/>
+        <img src="contact_preview.png" width="750" alt="Contact Add Preview"/>
       </td>
     </tr>
   </table>
 </div>
 
----
+
 
 ## Table of Contents
 
-- [💡 Overview](#-overview)
-- [✨ Features](#-features)
-- [🏗️ Architecture](#️-architecture)
+- [Overview](#-overview)
+- [Features](#-features)
+- [Architecture](#️-architecture)
   - [Conversation Chunking Algorithm](#conversation-chunking-algorithm)
   - [Contact-Based Partitioning](#contact-based-partitioning)
   - [Application Flow](#application-flow)
@@ -42,13 +42,13 @@ This project enables natural language search through your iMessage history by ch
   - [Project Structure](#project-structure)
 - [License](#license)
 
----
 
-## 💡 Overview
+
+## Overview
 
 RAGMessages is a powerful semantic search engine for your iMessage conversations, built using machine learning and vector embeddings. Designed to transform years of chat history into searchable knowledge, RAGMessages intelligently chunks conversations into threads and enables natural language queries to find specific discussions instantly. With a focus on privacy and performance, all processing happens locally on your machine.
 
-## ✨ Features
+## Features
 
 - **Local-First Architecture**: All data stays on your machine, no external APIs
 - **ML-Powered Chunking**: Neural network extracts conversation threads
@@ -57,7 +57,7 @@ RAGMessages is a powerful semantic search engine for your iMessage conversations
 - **Contact-Based Partitioning**: Dedicated indexes for each conversation partner ensure faster, isolated searches
 - **Interactive Chat Interface**: Chainlit-based UI for natural language queries and conversation discovery
 
-## 🏗️ Architecture
+## Architecture
 
 ### Conversation Chunking Algorithm
 
@@ -160,7 +160,7 @@ Dual Output Heads:
 - Handles interleaved conversations and multi-topic exchanges
 - Enables accurate thread extraction without rule-based heuristics
 
----
+
 
 ## Tech Stack
 
@@ -198,7 +198,7 @@ numpy>=1.24.0
 scikit-learn>=1.3.0
 ```
 
----
+
 
 ## Getting Started
 
@@ -272,22 +272,8 @@ RAGMessages/
     └── baseline.md                # Baseline comparison
 ```
 
----
+
 
 ## License
 
 MIT License - See LICENSE file for details.
-
-### Citation
-
-If you use this work in your research or projects, please cite:
-
-```bibtex
-@misc{ragmessages-2025,
-  author = {Preston Rank},
-  title = {RAGMessages: Semantic Search for iMessage Conversations},
-  year = {2025},
-  publisher = {GitHub},
-  url = {https://github.com/prestonrank/RAGMessages}
-}
-```
