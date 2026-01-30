@@ -1,4 +1,4 @@
-# RAG iMessage Query System with Conversation Disentanglement Model
+# iMessage RAG Query System with Conversation Disentanglement Model
 
 Unlock the hidden knowledge buried in your messages with semantic search that lets you query, analyze, and explore your conversations like never before.
 
