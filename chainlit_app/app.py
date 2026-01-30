@@ -33,6 +33,7 @@ async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
         # Format retrieved threads as context for LLM
         context_text = ""
         source_documents = []
+        seen_threads = set() 
 
         
         for contact in selected_contacts:
@@ -62,10 +63,16 @@ async def query_rag_pipeline(qa_chain, user_query, selected_contacts):
                         context_text += thread_text
 
                         # Add to source documents for display
-                        source_documents.append({
+                        current = (contact_name, thread_text)
+                        if current not in seen_threads:
+                            source_documents.append({
                             'contact_name': contact_name,
-                            'content': thread_text
+                            'content': thread_text,
+                            'start_time': str(thread.start_time),
+                            'end_time': str(thread.end_time)
                         })
+                            seen_threads.add(current)
+                            
 
         # Build LLM prompt with context
         from langchain_core.messages import HumanMessage
@@ -186,7 +193,7 @@ async def main(message: cl.Message):
     msg.content = f"**Querying:** {queried_contacts}\n\n{response['result']}"
     await msg.update()
 
-    # Display source documents if available
+    # Display source documents using cl.Text with iOS-style formatting
     if response.get("source_documents"):
         print(f"DEBUG: Found {len(response['source_documents'])} source documents")
 
@@ -194,15 +201,53 @@ async def main(message: cl.Message):
         for i, doc in enumerate(response["source_documents"]):
             contact_name = doc.get('contact_name', 'Unknown')
             content = doc.get('content', '')
+            start_time = doc.get('start_time', '')
+            end_time = doc.get('end_time', '')
 
             print(f"DEBUG: Source {i+1} - Contact: {contact_name}, Content length: {len(content)}")
 
-            if content:  # Only add if content exists
+            if content:
+                # Format start_time as "Year Month Day Time"
+                from datetime import datetime
+                try:
+                    dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                    formatted_date = dt.strftime("%Y %B %d %H:%M")
+                except:
+                    formatted_date = start_time
+
+                # Thread header
+                formatted_thread = f"**{formatted_date}**\n\n"
+
+                # Parse each message and format simply
+                import re
+                for line in content.split('\n'):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # Match: [timestamp] sender: text
+                    match = re.match(r'\[(.*?)\]\s*([^:]*?):\s*(.+)', line)
+                    if match:
+                        timestamp, sender, text = match.groups()
+                        sender = sender.strip()
+
+                        # Extract just the time (HH:MM)
+                        time_parts = timestamp.split()
+                        time_only = time_parts[-1] if len(time_parts) > 1 else timestamp
+
+                        # Simple format: Sender (time): message
+                        if sender == 'me':
+                            formatted_thread += f"**Me** ({time_only}): {text}\n\n"
+                        else:
+                            formatted_thread += f"**{contact_name}** ({time_only}): {text}\n\n"
+
+                # Footer
+                formatted_thread += f"---\n*Conversation with {contact_name}*"
+
                 source_elements.append(
                     cl.Text(
-                        name=f"{contact_name} - Thread {i+1}",
-                        content=content,
-                        display="inline"  # Changed from "side" to "inline"
+                        name=f"Thread {i+1}: {contact_name}",
+                        content=formatted_thread,
+                        display="inline"
                     )
                 )
 

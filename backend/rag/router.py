@@ -140,7 +140,9 @@ GENERATION RULES:
 1. Keep the SAME entities (people, places, things mentioned)
 2. Keep the SAME intent and time frame
 3. Only vary the phrasing/wording and/or pronouns if they are semantically similar.
-4. Goal: Maximize retrieval coverage by using different phrasings that might match different ways the information appears in messages
+4. If the category is temporal or information-retrieval. Include baseline queries that search for semantic similarities
+that follow the first four rules, but include 1-2 creative queries that break these rules, but can improve retrieval due to the randomness.
+5. Goal: Maximize retrieval coverage by using different phrasings that might match different ways the information appears in messages
 
 USER QUERY: "{query}"
 
